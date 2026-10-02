@@ -228,8 +228,8 @@
       <button data-min="10" data-t="plus10">+10分後</button>
     </div>
     <div class="opt"><span data-t="target">目標：</span>
-      <label><input type="radio" name="mode" value="max" checked> <span data-t="maxEl">最大仰角</span></label>
-      <label><input type="radio" name="mode" value="aos"> AOS</label>
+      <label><input type="radio" name="mode" value="aos" checked> AOS</label>
+      <label><input type="radio" name="mode" value="max"> <span data-t="maxEl">最大仰角</span></label>
       <label class="last-ten"><input type="checkbox" id="lastTen"><span data-t="lastTen">最後の10秒は毎秒</span></label>
     </div>
   </div>
@@ -275,7 +275,7 @@
 
   <div class="card note">
     <ul class="ja">
-      <li>KOSEN-1（NORAD 49402、高知高専の 2U CubeSat）の次のパスを自動で目標に設定します。目標は「最大仰角」か「AOS（受信開始）」を選べます。パスをタップすると切り替えられます。</li>
+      <li>KOSEN-1（NORAD 49402、高知高専の 2U CubeSat）の次のパスを自動で目標に設定します。目標は「AOS（受信開始）」（既定）か「最大仰角」を選べます。パスをタップすると切り替えられます。</li>
       <li>観測地点は高知高専です。「📍 現在地」で端末の位置に切り替えると、その地点でパスを計算し直します（地点は端末に記憶します）。</li>
       <li>指定時刻の 5 分前から 5 秒ごとに「あと○秒」、通過後は 5 分間「○秒経過」と読み上げます。</li>
       <li class="ios-only">iPhone では最初に「開始」か「🔊 テスト」をタップしないと音声が出ません。</li>
@@ -288,7 +288,7 @@
       <li>KOSEN-1 は小型衛星のため肉眼ではほぼ見えません。無線受信のタイミング合わせにお使いください。</li>
     </ul>
     <ul class="en">
-      <li>Automatically targets the next pass of KOSEN-1 (NORAD 49402, a 2U CubeSat built by NIT Kochi). Choose “Max elev.” or “AOS” (acquisition of signal) as the target. Tap a pass to switch to it.</li>
+      <li>Automatically targets the next pass of KOSEN-1 (NORAD 49402, a 2U CubeSat built by NIT Kochi). Choose “AOS” (acquisition of signal, default) or “Max elev.” as the target. Tap a pass to switch to it.</li>
       <li>The default observer is NIT Kochi. Tap “📍 My location” to recompute passes for your device’s position (remembered on this device).</li>
       <li>From 5 minutes before the target, the remaining seconds are announced every 5 seconds, then the elapsed seconds for 5 minutes afterwards.</li>
       <li class="ios-only">On iPhone, no sound plays until you tap “Start” or “🔊 Test” once.</li>
