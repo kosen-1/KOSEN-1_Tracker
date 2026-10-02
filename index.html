@@ -98,9 +98,17 @@
     .opt .last-ten { margin-left: auto; }
 
     .countdown {
-      text-align: center;
-      padding: 4px 12px;
+      display: flex; align-items: center; gap: 8px;
+      padding: 6px 10px 6px 12px;
     }
+    .countdown .cd-text { flex: 1; min-width: 0; text-align: center; }
+    .countdown canvas { display: block; }
+    .cd-sky { flex-shrink: 0; width: 124px; display: flex; flex-direction: column; align-items: center; gap: 1px; }
+    .cd-clock { font-size: 12px; font-weight: 700; color: #eef0ff; font-variant-numeric: tabular-nums; }
+    .cd-times { width: 100%; display: flex; justify-content: space-between; gap: 6px; font-size: 10px; font-variant-numeric: tabular-nums; }
+    .cd-times b { display: block; font-size: 11px; color: #eef0ff; }
+    .cd-times .aos { color: #4ade80; }
+    .cd-times .los { color: #f87171; text-align: right; }
     .countdown .phase { font-size: 13px; color: #9ca3d8; min-height: 17px; }
     .countdown .big {
       font-size: 36px; font-weight: 700;
@@ -132,7 +140,7 @@
     .warn:empty { display: none; }
 
     .pass-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
-    .pass-head .title { margin: 0; flex: 1; color: #9ca3d8; font-size: 13px; }
+    .pass-head .title { margin: 0; flex: 1 1 100%; color: #9ca3d8; font-size: 13px; }
     .obs-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 4px; font-size: 13px; color: #c8ccf0; }
     .obs-row .where { flex: 1; min-width: 150px; }
     .obs-row .where b { color: #eef0ff; }
@@ -158,6 +166,8 @@
     .pass .dir { font-size: 13px; color: #b0b6e0; }
     .pass .el { font-size: 24px; font-weight: 700; text-align: right; white-space: nowrap; }
     .pass .el span { font-size: 12px; font-weight: 400; color: #a0a8e0; }
+    .pass-minimap { flex-shrink: 0; width: 88px; height: 88px; }
+    .pass-minimap canvas { display: block; border-radius: 50%; }
     .vis-tag { font-size: 11px; padding: 1px 6px; border-radius: 3px; margin-left: 4px; }
     .vis-tag.yes { background: #3b2f07; color: #fcd34d; }
     .vis-tag.no  { background: #22224a; color: #9ca3d8; }
@@ -225,10 +235,20 @@
   </div>
 
   <div class="card countdown" id="cd">
-    <div class="phase" id="phase" data-t="phaseInit">時刻を設定して「開始」を押してください</div>
-    <div class="big" id="big">--:--</div>
-    <div class="target" id="targetLabel"></div>
-    <div class="last" id="last"></div>
+    <div class="cd-text">
+      <div class="phase" id="phase" data-t="phaseInit">時刻を設定して「開始」を押してください</div>
+      <div class="big" id="big">--:--</div>
+      <div class="target" id="targetLabel"></div>
+      <div class="last" id="last"></div>
+    </div>
+    <div class="cd-sky">
+      <div class="cd-clock" id="cdClock">--/-- --:--:--</div>
+      <canvas id="cdSky" data-size="106"></canvas>
+      <div class="cd-times">
+        <div class="aos">AOS<b id="cdAos">--:--:--</b></div>
+        <div class="los">LOS<b id="cdLos">--:--:--</b></div>
+      </div>
+    </div>
   </div>
 
   <div class="btns" style="margin-bottom:8px">
@@ -737,6 +757,18 @@
   }
   $('follow').addEventListener('change', () => { trackAt = 0; updateMap(); });
   setInterval(updateMap, 1000);
+  // 時計（月日＋秒）とカウントダウン欄のスカイマップ。通過中は 0.2 秒ごとに衛星の位置を更新
+  let cdLastSec = -1, cdLive = false;
+  setInterval(() => {
+    const now = new Date();
+    if (now.getSeconds() !== cdLastSec) {
+      cdLastSec = now.getSeconds();
+      $('cdClock').textContent = `${md(now)} ${hms(now)}`;
+      cdLive = drawCdSky();
+    } else if (cdLive) {
+      cdLive = drawCdSky();
+    }
+  }, 200);
   let allPasses = [];
   let shownPasses = [];
 
@@ -816,7 +848,8 @@
       const look = lookAngles(new Date(t));
       if (!look) continue;
       if (look.el >= MIN_EL) {
-        if (!cur) cur = { maxEl: -Infinity, aos: t };
+        if (!cur) cur = { maxEl: -Infinity, aos: t, points: [] };
+        cur.points.push(skyPoint(look, new Date(t)));
         if (look.el > cur.maxEl) { cur.maxEl = look.el; cur.maxT = t; }
       } else if (cur) {
         cur.los = t;
@@ -826,6 +859,10 @@
     }
     if (cur) { cur.los = end; result.push(refineMax(cur)); }
     return result;
+  }
+  // スカイマップ用の軌跡点（日照中か地球の影かも記録）
+  function skyPoint(look, date) {
+    return { el: look.el, az: look.az, lit: isSunlit(look.pos, sunEci(date)) };
   }
   // AOS と最大仰角時刻を 1 秒単位まで詰める
   function refineMax(p) {
@@ -840,11 +877,124 @@
       const l = lookAngles(new Date(t));
       if (l && l.el > best.el) best = { t, el: l.el, az: l.az };
     }
+    // 軌跡の両端を AOS・LOS の位置まで伸ばす
+    const losLook = lookAngles(new Date(p.los));
+    const points = [...p.points];
+    if (aosLook) points.unshift(skyPoint(aosLook, new Date(aos)));
+    if (losLook) points.push(skyPoint(losLook, new Date(p.los)));
     return {
       aosTime: new Date(aos), aosAz: aosLook ? aosLook.az : best.az, losTime: new Date(p.los),
+      losAz: losLook ? losLook.az : points.at(-1).az,
       maxElTime: new Date(Math.round(best.t / 1000) * 1000),
-      maxEl: best.el, maxElAz: best.az,
+      maxEl: best.el, maxElAz: best.az, points,
     };
+  }
+
+  // ---------- スカイマップ（ISS-Alert と同じ描画） ----------
+  // Retina でにじまないよう、表示サイズ × devicePixelRatio で描く
+  function prepCanvas(canvas) {
+    const size = Number(canvas.dataset.size);
+    const dpr  = window.devicePixelRatio || 1;
+    if (canvas.width !== size * dpr) {
+      canvas.width = canvas.height = size * dpr;
+      canvas.style.width = canvas.style.height = size + 'px';
+    }
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return { ctx, W: size, H: size };
+  }
+  function toXY(az, el, cx, cy, R) {
+    const r = (90 - el) / 90 * R;
+    const angle = (az - 90) * Math.PI / 180;
+    return [cx + Math.cos(angle) * r, cy + Math.sin(angle) * r];
+  }
+  function drawPolarPlot(pass, canvas, large, live) {
+    const { ctx, W, H } = prepCanvas(canvas);
+    const cx = W / 2, cy = H / 2;
+    const R  = Math.min(cx, cy) - (large ? 12 : 6);
+    ctx.clearRect(0, 0, W, H);
+
+    ctx.fillStyle = '#10122e';
+    ctx.beginPath(); ctx.arc(cx, cy, R + (large ? 11 : 5), 0, Math.PI * 2); ctx.fill();
+
+    for (const el of [0, 30, 60]) {
+      const r = (90 - el) / 90 * R;
+      ctx.strokeStyle = el === 0 ? '#7880c8' : '#4a5296';
+      ctx.lineWidth = el === 0 ? 1.5 : 1;
+      ctx.setLineDash(el === 0 ? [] : [3, 3]);
+      ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
+    }
+    ctx.setLineDash([]);
+    // 南北・東西の補助線
+    ctx.strokeStyle = '#33396e'; ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - R); ctx.lineTo(cx, cy + R);
+    ctx.moveTo(cx - R, cy); ctx.lineTo(cx + R, cy);
+    ctx.stroke();
+    ctx.fillStyle = '#7880c8';
+    ctx.beginPath(); ctx.arc(cx, cy, large ? 3 : 2, 0, Math.PI * 2); ctx.fill();
+
+    if (large) {
+      ctx.font = 'bold 11px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      for (const [lbl, az] of [['N', 0], ['E', 90], ['S', 180], ['W', 270]]) {
+        const [x, y] = toXY(az, -7, cx, cy, R);
+        ctx.fillStyle = lbl === 'N' ? '#93c5fd' : '#e0e3ff';
+        ctx.fillText(lbl, x, y);
+      }
+    }
+    if (!pass || !pass.points.length) return;
+
+    // 軌跡：地球の影の中は破線、日照中はグラデーション（KOSEN-1 は肉眼では見えないので目視区間は描かない）
+    const pts = pass.points, n = pts.length;
+    for (let i = 0; i < n - 1; i++) {
+      const f = i / Math.max(1, n - 1);
+      const [x1, y1] = toXY(pts[i].az,   pts[i].el,   cx, cy, R);
+      const [x2, y2] = toXY(pts[i+1].az, pts[i+1].el, cx, cy, R);
+      if (!pts[i].lit) {
+        ctx.strokeStyle = '#6b70b0'; ctx.setLineDash([3, 3]);
+      } else {
+        ctx.strokeStyle = `rgb(${Math.round(f * 220)},${Math.round(180 - f * 120)},80)`; ctx.setLineDash([]);
+      }
+      ctx.lineWidth = large ? 2 : 1.5;
+      ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+    }
+    ctx.setLineDash([]);
+
+    const dotR = large ? 4 : 3;
+    const mkr = (az, el, color) => {
+      const [x, y] = toXY(az, el, cx, cy, R);
+      ctx.fillStyle = color;
+      ctx.beginPath(); ctx.arc(x, y, dotR, 0, Math.PI * 2); ctx.fill();
+    };
+    mkr(pass.aosAz,   pts[0].el,  '#4ade80');
+    mkr(pass.maxElAz, pass.maxEl, '#fbbf24');
+    mkr(pass.losAz,   pts.at(-1).el, '#f87171');
+
+    // 通過中は KOSEN-1 の現在位置を重ねる
+    if (live && live.el > 0) {
+      const [x, y] = toXY(live.az, live.el, cx, cy, R);
+      const pulse = 1 + 0.5 * (0.5 + 0.5 * Math.sin(Date.now() / 200));
+      ctx.fillStyle = 'rgba(96,165,250,0.25)';
+      ctx.beginPath(); ctx.arc(x, y, 10 * pulse, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 2;
+      ctx.fillStyle = '#60a5fa';
+      ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    }
+  }
+  // カウントダウン欄のスカイマップ（選択中のパス＋現在位置）。通過中なら true
+  function drawCdSky() {
+    let live = null;
+    if (selectedPass && satrec) {
+      const now = Date.now();
+      if (now >= selectedPass.aosTime - 60000 && now <= selectedPass.losTime.getTime() + 60000)
+        live = lookAngles(new Date(now));
+    }
+    drawPolarPlot(selectedPass, $('cdSky'), true, live);
+    $('cdAos').textContent = selectedPass ? hms(selectedPass.aosTime) : '--:--:--';
+    $('cdLos').textContent = selectedPass ? hms(selectedPass.losTime) : '--:--:--';
+    return !!live;
   }
 
   function elColor(el) { return el >= 60 ? '#f59e0b' : el >= 30 ? '#34d399' : '#60a5fa'; }
@@ -879,8 +1029,10 @@
           <div class="dir">${t('passDir', az, p)}</div>
         </div>
         <div class="el" style="color:${elColor(p.maxEl)}">${p.maxEl.toFixed(0)}<span>°</span></div>
+        <div class="pass-minimap"><canvas id="mini${i}" data-size="88"></canvas></div>
       </div>`;
     }).join('');
+    shownPasses.forEach((p, i) => drawPolarPlot(p, $(`mini${i}`), false));
   }
   $('passList').addEventListener('click', e => {
     const card = e.target.closest('.pass');
@@ -900,6 +1052,7 @@
       $('targetLabel').textContent = '';
     }
     renderPasses();
+    drawCdSky();
   }
   // 一覧の先頭（＝次のパス）を目標にする。手入力中や実行中は触らない
   function autoSelect() {
