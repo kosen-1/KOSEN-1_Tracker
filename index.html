@@ -80,16 +80,16 @@
       min-height: 36px;
     }
 
-    .target-row { display: flex; align-items: center; gap: 8px; }
-    .target-row label { color: #9ca3d8; font-size: 12px; white-space: nowrap; }
-    .target-row input { flex: 1; min-width: 0; }
-    .quick { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
-    .quick button {
-      flex: 1;
-      background: #1e1e45; color: #c8ccf0;
-      border: 1px solid #3a3a7a; border-radius: 6px;
-      font-size: 13px; padding: 4px;
+    .dop-head { display: flex; align-items: center; gap: 8px; color: #9ca3d8; font-size: 12px; }
+    .dop-tag { margin-left: auto; white-space: nowrap; font-size: 11px; padding: 1px 7px; border-radius: 3px; background: #22224a; color: #9ca3d8; }
+    .dop-tag.up { background: #14532d; color: #4ade80; }
+    .dop-freq {
+      font-size: 30px; font-weight: 700; line-height: 1.15; color: #eef0ff;
+      font-variant-numeric: tabular-nums; text-align: center;
     }
+    .dop-freq span { font-size: 15px; font-weight: 400; color: #a0a8e0; margin-left: 4px; }
+    .dop-freq.below { color: #7880c8; }
+    .dop-sub { font-size: 12px; color: #b0b6e0; text-align: center; font-variant-numeric: tabular-nums; }
 
     .opt { display: flex; align-items: center; gap: 6px; margin-top: 6px; font-size: 13px; color: #c8ccf0; }
     .opt input { width: 16px; height: 16px; }
@@ -218,15 +218,9 @@
   </div>
 
   <div class="card">
-    <div class="target-row">
-      <label for="target" data-t="targetTime">目標時刻</label>
-      <input type="datetime-local" id="target" step="1">
-    </div>
-    <div class="quick">
-      <button data-min="1" data-t="plus1">+1分後</button>
-      <button data-min="6" data-t="plus6">+6分後</button>
-      <button data-min="10" data-t="plus10">+10分後</button>
-    </div>
+    <div class="dop-head"><span data-t="dopTitle">ビーコン 435.525 MHz（ドップラー補正）</span><span class="dop-tag" id="dopTag"></span></div>
+    <div class="dop-freq" id="dopFreq">---.-----<span>MHz</span></div>
+    <div class="dop-sub" id="dopSub">—</div>
     <div class="opt"><span data-t="target">目標：</span>
       <label><input type="radio" name="mode" value="aos" checked> AOS</label>
       <label><input type="radio" name="mode" value="max"> <span data-t="maxEl">最大仰角</span></label>
@@ -236,7 +230,7 @@
 
   <div class="card countdown" id="cd">
     <div class="cd-text">
-      <div class="phase" id="phase" data-t="phaseInit">時刻を設定して「開始」を押してください</div>
+      <div class="phase" id="phase" data-t="phaseInit">パス予測を計算しています…</div>
       <div class="big" id="big">--:--</div>
       <div class="target" id="targetLabel"></div>
       <div class="last" id="last"></div>
@@ -277,7 +271,8 @@
     <ul class="ja">
       <li>KOSEN-1（NORAD 49402、高知高専の 2U CubeSat）の次のパスを自動で目標に設定します。目標は「AOS（受信開始）」（既定）か「最大仰角」を選べます。パスをタップすると切り替えられます。</li>
       <li>観測地点は高知高専です。「📍 現在地」で端末の位置に切り替えると、その地点でパスを計算し直します（地点は端末に記憶します）。</li>
-      <li>指定時刻の 5 分前から 5 秒ごとに「あと○秒」、通過後は 5 分間「○秒経過」と読み上げます。</li>
+      <li>目標（AOS か最大仰角）の 5 分前から 5 秒ごとに「あと○秒」、目標の後は LOS（受信終了）まで 5 秒ごとに「LOSまであと○秒」と読み上げます。</li>
+      <li>上の欄に、KOSEN-1 のビーコン 435.525 MHz をドップラー補正したリアルタイムの受信周波数を表示します（観測地点基準）。</li>
       <li class="ios-only">iPhone では最初に「開始」か「🔊 テスト」をタップしないと音声が出ません。</li>
       <li class="ios-only">カウントダウン中は Safari を前面に表示したままにしてください（画面ロック・アプリ切替で停止します）。対応機種では自動で画面スリープを防止します。</li>
       <li class="ios-only">音量ボタンで音量を上げ、消音モードも確認してください。</li>
@@ -290,7 +285,8 @@
     <ul class="en">
       <li>Automatically targets the next pass of KOSEN-1 (NORAD 49402, a 2U CubeSat built by NIT Kochi). Choose “AOS” (acquisition of signal, default) or “Max elev.” as the target. Tap a pass to switch to it.</li>
       <li>The default observer is NIT Kochi. Tap “📍 My location” to recompute passes for your device’s position (remembered on this device).</li>
-      <li>From 5 minutes before the target, the remaining seconds are announced every 5 seconds, then the elapsed seconds for 5 minutes afterwards.</li>
+      <li>From 5 minutes before the target (AOS or max elevation), the remaining seconds are announced every 5 seconds; after the target, the seconds to LOS (loss of signal) are announced every 5 seconds until LOS.</li>
+      <li>The panel at the top shows the real-time Doppler-corrected receive frequency of KOSEN-1’s 435.525 MHz beacon for the observer location.</li>
       <li class="ios-only">On iPhone, no sound plays until you tap “Start” or “🔊 Test” once.</li>
       <li class="ios-only">Keep Safari in the foreground during the countdown (locking the screen or switching apps stops it). The screen is kept awake automatically on supported devices.</li>
       <li class="ios-only">Turn up the volume with the volume buttons and check the silent switch.</li>
@@ -306,7 +302,6 @@
 <script>
   const LEAD_SEC = 300;      // 何秒前から読み上げるか
   const STEP_SEC = 5;        // 読み上げ間隔
-  const TRAIL_SEC = 300;     // 通過後に何秒まで読み上げるか
 
   const $ = id => document.getElementById(id);
 
@@ -328,17 +323,17 @@
     ja: {
       badge: 'カウントダウン', lat: '緯度', lon: '経度', alt: '高度', look: '仰角 / 方位', sun: '日照',
       nextAos: '次の AOS まで', next90: '今後 90 分', past30: '過去 30 分', footprint: '◯ 可視範囲(3°)', follow: '追従',
-      targetTime: '目標時刻', plus1: '+1分後', plus6: '+6分後', plus10: '+10分後',
+      dopTitle: 'ビーコン 435.525 MHz（ドップラー補正）', dopUp: '📡 通過中', dopDown: () => `仰角 ${MIN_EL}° 未満`,
+      dopSub: (khz, range, rr) => `シフト ${khz} kHz・距離 ${range} km（${rr} km/s）`,
       target: '目標：', maxEl: '最大仰角', lastTen: '最後の10秒は毎秒',
       start: '開始', stop: '停止', test: '🔊 テスト', refresh: '更新',
       obsPoint: '📍 観測地点：', geo: '📍 現在地', locating: '取得中…', backHome: '高知高専に戻す',
       home: '高知高専', here: '現在地',
-      phaseInit: '時刻を設定して「開始」を押してください',
-      passSet: '次のパスを設定しました。「開始」を押してください',
+      phaseInit: 'パス予測を計算しています…',
+      passSet: '次のパスを設定しました。「開始」を押してください。カウントダウンは５分前から始まります',
       waiting: m => `待機中（残り ${m} 分で読み上げ開始）`,
       counting: 'カウントダウン中', atAos: '📡 AOS（受信開始）です', atMax: '🛰 KOSEN-1 最大仰角です',
-      after: '通過後の経過時間', finished: '終了しました', stopped: '停止しました',
-      manualTarget: d => `目標 ${md(d)} ${hms(d)}`,
+      toLos: 'LOS までのカウントダウン', atLos: '📡 LOS（受信終了）です', finished: '終了しました', stopped: '停止しました',
       aosLabel: (p, d) => `AOS・${dir(p.aosAz)}から（最大仰角 ${p.maxEl.toFixed(0)}°）（${md(d)} ${hms(d)}）`,
       maxLabel: (p, d) => `最大仰角 ${p.maxEl.toFixed(0)}°・${dir(p.maxElAz)}（${md(d)} ${hms(d)}）`,
       sunlit: '☀ 日照', eclipse: '🌑 地球の影', overhead: '🛰 上空通過中',
@@ -352,7 +347,7 @@
       tleOk: (ft, src, stale) => `${stale ? '⚠ 取得失敗・保存データ ' : 'TLE '}${md(ft)} ${hm(ft)}（${src}）`,
       tleError: msg => 'エラー: ' + msg,
       noPrediction: 'パス予測を取得できませんでした。時刻は手入力してください。',
-      alertNoTime: '時刻を入力してください', alertBadTime: '時刻が不正です', alertPast: '過去の時刻です',
+      alertNoPass: 'パスが選択されていません', alertPast: 'このパスはすでに終わりました',
       sleepUnsupported: '※ この端末は画面スリープ防止に未対応です。' + (IS_ANDROID ? '「設定」→「ディスプレイ」→「画面消灯」を長めにしてください。' : '自動ロックを「なし」にしてください。'),
       sleepFailed: '※ 画面スリープ防止に失敗しました。' + (IS_ANDROID ? '「設定」→「ディスプレイ」→「画面消灯」を長めにしてください。' : '自動ロックを「なし」にしてください。'),
       geoUnsupported: '※ この端末は位置情報に対応していません。',
@@ -364,7 +359,8 @@
         : '※ 現在地を取得できませんでした。屋外や Wi-Fi のある場所でもう一度お試しください。',
       // 読み上げ
       sayRemain: s => `あと${s}秒`,
-      sayElapsed: s => `${s}秒経過`,
+      sayToLos: s => `LOSまであと${s}秒`,
+      sayLos: 'いま、LOSです',
       sayAos: p => `いま、AOSです。${dir(p.aosAz)}の空から昇ります`,
       sayMax: p => `いま、最大仰角です。${dir(p.maxElAz)}の空、${Math.round(p.maxEl)}度`,
       sayTarget: 'いま、目標時刻です',
@@ -375,17 +371,17 @@
     en: {
       badge: 'Countdown', lat: 'Lat', lon: 'Lon', alt: 'Altitude', look: 'Elev / Az', sun: 'Sunlight',
       nextAos: 'Next AOS in', next90: 'Next 90 min', past30: 'Past 30 min', footprint: '◯ Coverage (3°)', follow: 'Follow',
-      targetTime: 'Target', plus1: '+1 min', plus6: '+6 min', plus10: '+10 min',
+      dopTitle: 'Beacon 435.525 MHz (Doppler-corrected)', dopUp: '📡 In pass', dopDown: () => `Elev < ${MIN_EL}°`,
+      dopSub: (khz, range, rr) => `Shift ${khz} kHz · range ${range} km (${rr} km/s)`,
       target: 'Target:', maxEl: 'Max elev.', lastTen: 'Last 10 s: every sec',
       start: 'Start', stop: 'Stop', test: '🔊 Test', refresh: 'Refresh',
       obsPoint: '📍 Observer: ', geo: '📍 My location', locating: 'Locating…', backHome: 'Back to NIT Kochi',
       home: 'NIT Kochi', here: 'My location',
-      phaseInit: 'Set a time and press “Start”',
-      passSet: 'Next pass selected. Press “Start”',
+      phaseInit: 'Computing passes…',
+      passSet: 'Next pass selected. Press “Start”. The countdown begins 5 minutes before.',
       waiting: m => `Waiting (announcements start ${m} min before)`,
       counting: 'Counting down', atAos: '📡 AOS (acquisition of signal)', atMax: '🛰 KOSEN-1 at max elevation',
-      after: 'Time since target', finished: 'Finished', stopped: 'Stopped',
-      manualTarget: d => `Target ${md(d)} ${hms(d)}`,
+      toLos: 'Counting down to LOS', atLos: '📡 LOS (loss of signal)', finished: 'Finished', stopped: 'Stopped',
       aosLabel: (p, d) => `AOS from ${dir(p.aosAz)} · max ${p.maxEl.toFixed(0)}° · ${md(d)} ${hms(d)}`,
       maxLabel: (p, d) => `Max elev. ${p.maxEl.toFixed(0)}° ${dir(p.maxElAz)} · ${md(d)} ${hms(d)}`,
       sunlit: '☀ Sunlit', eclipse: '🌑 Eclipse', overhead: '🛰 Overhead now',
@@ -399,7 +395,7 @@
       tleOk: (ft, src, stale) => `${stale ? '⚠ Fetch failed · saved ' : 'TLE '}${md(ft)} ${hm(ft)} (${src})`,
       tleError: msg => 'Error: ' + msg,
       noPrediction: 'Could not compute passes. Please enter the time manually.',
-      alertNoTime: 'Please enter a time', alertBadTime: 'Invalid time', alertPast: 'That time is in the past',
+      alertNoPass: 'No pass is selected', alertPast: 'This pass has already ended',
       sleepUnsupported: '※ This device cannot keep the screen awake. ' + (IS_ANDROID ? 'Set Settings → Display → Screen timeout to a longer value.' : 'Set Auto-Lock to “Never”.'),
       sleepFailed: '※ Could not keep the screen awake. ' + (IS_ANDROID ? 'Set Settings → Display → Screen timeout to a longer value.' : 'Set Auto-Lock to “Never”.'),
       geoUnsupported: '※ This device does not support location.',
@@ -410,7 +406,8 @@
         ? '※ Could not get your location. Make sure the device’s Location is on and try again outdoors or near Wi-Fi.'
         : '※ Could not get your location. Try again outdoors or near Wi-Fi.',
       sayRemain: s => s === 1 ? '1 second' : `${s} seconds`,
-      sayElapsed: s => `${s} seconds elapsed`,
+      sayToLos: s => `${s} seconds to LOS`,
+      sayLos: 'LOS now.',
       sayAos: p => `AOS now. Rising in the ${dirSpoken(DIR_EN[dirIdx(p.aosAz)])}.`,
       sayMax: p => `Maximum elevation now. ${Math.round(p.maxEl)} degrees, in the ${dirSpoken(DIR_EN[dirIdx(p.maxElAz)])}.`,
       sayTarget: 'Target time now.',
@@ -430,29 +427,14 @@
     if (key) { el.dataset.t = key; el.textContent = t(key); }
     else { delete el.dataset.t; el.textContent = ''; }
   }
-  const targetInput = $('target');
-
-  let targetMs = null;
-  let schedule = [];         // 読み上げる残り秒数（降順）
+  let targetMs = null;       // 目標（AOS か最大仰角）の時刻
+  let losMs = null;
+  let events = [];           // 読み上げ予定 { at: 時刻(ms), say: () => 文 }（時刻順）
   let nextIdx = 0;
   let timer = null;
   let wakeLock = null;
   const voices = { ja: null, en: null };
-  let selectedPass = null;   // パス一覧から選んだ場合のみセット
-
-  // ---------- 時刻入力 ----------
-  function toLocalInput(d) {
-    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-  }
-  function setRelative(min) {
-    const d = new Date(Date.now() + min * 60000);
-    d.setMilliseconds(0);
-    targetInput.value = toLocalInput(d);
-  }
-  document.querySelectorAll('.quick button').forEach(b =>
-    b.addEventListener('click', () => { setRelative(Number(b.dataset.min)); selectPass(null); }));
-  targetInput.addEventListener('input', () => selectPass(null));
-  setRelative(6);
+  let selectedPass = null;   // カウントダウンの対象パス
 
   // ---------- 音声 ----------
   // 英語は聞き取りやすい女性の声を名前で選ぶ（音声 API に性別の情報がないため）。
@@ -496,10 +478,6 @@
     $('last').textContent = '🔊 ' + text;
   }
 
-  function phrase(sec) {
-    return t('sayRemain', sec);
-  }
-
   // ---------- 画面スリープ防止 ----------
   async function acquireWakeLock() {
     try {
@@ -521,17 +499,24 @@
   });
 
   // ---------- カウントダウン ----------
-  function buildSchedule() {
-    const s = [];
+  // 目標の 5 分前から 5 秒ごとに「あと○秒」、目標の時刻に AOS / 最大仰角、
+  // その後は LOS まで 5 秒ごとに「LOSまであと○秒」、LOS で終了
+  function buildEvents(target, los) {
+    const ev = [];
     const fine = $('lastTen').checked;
-    for (let t = LEAD_SEC; t > 0; t -= STEP_SEC) {
-      if (fine && t < 10) continue;
-      s.push(t);
+    for (let s = LEAD_SEC; s > 0; s -= STEP_SEC) {
+      if (fine && s < 10) continue;
+      ev.push({ at: target - s * 1000, say: () => t('sayRemain', s) });
     }
-    if (fine) for (let t = 9; t > 0; t--) s.push(t);
-    s.push(0);
-    for (let t = STEP_SEC; t <= TRAIL_SEC; t += STEP_SEC) s.push(-t);  // 通過後は負の値
-    return s;
+    if (fine) for (let s = 9; s > 0; s--) ev.push({ at: target - s * 1000, say: () => t('sayRemain', s) });
+    ev.push({ at: target, say: zeroPhrase });
+    for (let s = Math.floor((los - target) / 1000 / STEP_SEC) * STEP_SEC; s > 0; s -= STEP_SEC) {
+      const at = los - s * 1000;
+      if (at - target < 4000) continue;     // 目標の読み上げと重ならないように
+      ev.push({ at, say: () => t('sayToLos', s) });
+    }
+    ev.push({ at: los, say: () => t('sayLos') });
+    return ev;
   }
 
   function fmt(sec) {
@@ -540,34 +525,30 @@
   }
 
   function tick() {
-    const remMs = targetMs - Date.now();
-    const remSec = Math.ceil(remMs / 1000);
+    const now = Date.now();
     const cd = $('cd');
 
-    // 読み上げ判定：残り時間がスケジュール値を下回った瞬間に読む
-    while (nextIdx < schedule.length && remMs <= schedule[nextIdx] * 1000) {
-      const s = schedule[nextIdx];
-      // 2秒以上遅れたもの（復帰直後など）は読まずに飛ばす
-      if (remMs > (s - 2) * 1000) speak(s === 0 ? zeroPhrase() : s > 0 ? phrase(s) : t('sayElapsed', -s));
+    // 読み上げ判定：予定時刻を過ぎた瞬間に読む。2 秒以上遅れたもの（復帰直後など）は飛ばす
+    while (nextIdx < events.length && now >= events[nextIdx].at) {
+      if (now - events[nextIdx].at < 2000) speak(events[nextIdx].say());
       nextIdx++;
     }
 
-    if (remMs <= 0) {
-      const elapsed = Math.floor(-remMs / 1000);
-      $('big').textContent = '+' + fmt(Math.min(elapsed, TRAIL_SEC));
+    if (now >= losMs) {
+      $('big').textContent = '0:00';
       cd.className = 'card countdown done';
-      if (elapsed < 3) {
-        setT($('phase'), isAosTarget() ? 'atAos' : 'atMax');
-      } else {
-        setT($('phase'), 'after');
-      }
-      if (nextIdx >= schedule.length && remMs <= -TRAIL_SEC * 1000 - 2000) {
-        setT($('phase'), 'finished');
-        finish(false);
-      }
+      if (now < losMs + 3000) setT($('phase'), 'atLos');
+      else { setT($('phase'), 'finished'); finish(false); }
+      return;
+    }
+    if (now >= targetMs) {
+      $('big').textContent = fmt(Math.ceil((losMs - now) / 1000));
+      cd.className = 'card countdown done';
+      setT($('phase'), now - targetMs < 3000 ? (isAosTarget() ? 'atAos' : 'atMax') : 'toLos');
       return;
     }
 
+    const remSec = Math.ceil((targetMs - now) / 1000);
     $('big').textContent = fmt(remSec);
     if (remSec > LEAD_SEC) {
       $('phase').textContent = t('waiting', LEAD_SEC / 60);
@@ -580,28 +561,23 @@
   }
 
   function start() {
-    if (!targetInput.value) { alert(t('alertNoTime')); return; }
-    const tm = new Date(targetInput.value).getTime();
-    if (isNaN(tm)) { alert(t('alertBadTime')); return; }
-    if (tm <= Date.now()) { alert(t('alertPast')); return; }
+    const p = selectedPass;
+    if (!p) { alert(t('alertNoPass')); return; }
+    if (p.losTime.getTime() <= Date.now()) { alert(t('alertPast')); return; }
 
-    targetMs = tm;
-    schedule = buildSchedule();
+    targetMs = targetTime(p).getTime();
+    losMs = p.losTime.getTime();
+    events = buildEvents(targetMs, losMs);
     // すでに過ぎた読み上げ点は除外（5分を切ってから開始した場合）
-    const remMs = targetMs - Date.now();
-    nextIdx = schedule.findIndex(s => s * 1000 < remMs);
-    if (nextIdx < 0) nextIdx = schedule.length;
-
-    if (!selectedPass) $('targetLabel').textContent = t('manualTarget', new Date(targetMs));
+    nextIdx = events.findIndex(e => e.at > Date.now());
+    if (nextIdx < 0) nextIdx = events.length;
 
     // タップ操作の中で一度話すことで iOS の音声ロックを解除する
-    speak(t('sayStart') +
-      (selectedPass ? t(isAosTarget() ? 'sayStartAos' : 'sayStartMax', selectedPass) : ''));
+    speak(t('sayStart') + t(isAosTarget() ? 'sayStartAos' : 'sayStartMax', p));
     acquireWakeLock();
 
     $('startBtn').disabled = true;
     $('stopBtn').disabled = false;
-    targetInput.disabled = true;
     $('lastTen').disabled = true;
     document.querySelectorAll('input[name=mode]').forEach(r => r.disabled = true);
     $('geoBtn').disabled = $('homeBtn').disabled = true;
@@ -618,7 +594,6 @@
     releaseWakeLock();
     $('startBtn').disabled = false;
     $('stopBtn').disabled = true;
-    targetInput.disabled = false;
     $('lastTen').disabled = false;
     document.querySelectorAll('input[name=mode]').forEach(r => r.disabled = false);
     $('geoBtn').disabled = $('homeBtn').disabled = false;
@@ -635,7 +610,7 @@
 
   $('startBtn').addEventListener('click', start);
   $('stopBtn').addEventListener('click', () => finish(true));
-  $('testBtn').addEventListener('click', () => speak(phrase(300)));
+  $('testBtn').addEventListener('click', () => speak(t('sayRemain', 300)));
 
   // ================= KOSEN-1 パス予測（iPhone-KOSEN-1 と同じ観測地点・仰角条件） =================
   // 観測地点：既定は高知高専。「現在地」で取得した地点は端末に記憶する
@@ -757,6 +732,39 @@
   }
   $('follow').addEventListener('change', () => { trackAt = 0; updateMap(); });
   setInterval(updateMap, 1000);
+  // ---------- ビーコンのドップラー補正 ----------
+  // 距離変化率 rr（遠ざかる向きが正）から受信周波数 f = f0 × (1 − rr / c) を求める。
+  // 観測地点は ECF → ECI に回し、地球の自転による速度も入れる
+  const BEACON_HZ = 435.525e6;
+  const C_KMS     = 299792.458;
+  const OMEGA_E   = 7.292115e-5;     // 地球の自転角速度 [rad/s]
+  function doppler(date) {
+    const pv = satellite.propagate(satrec, date);
+    if (!pv.position || pv.position.x === null || !pv.velocity) return null;
+    const gmst = satellite.gstime(date);
+    const o = satellite.geodeticToEcf(OBSERVER);
+    const c = Math.cos(gmst), s = Math.sin(gmst);
+    const ox = o.x * c - o.y * s, oy = o.x * s + o.y * c, oz = o.z;
+    const dx = pv.position.x - ox, dy = pv.position.y - oy, dz = pv.position.z - oz;
+    const range = Math.hypot(dx, dy, dz);
+    const rr = (dx * (pv.velocity.x + OMEGA_E * oy) + dy * (pv.velocity.y - OMEGA_E * ox) + dz * pv.velocity.z) / range;
+    return { hz: BEACON_HZ * (1 - rr / C_KMS), range, rr };
+  }
+  function updateDoppler() {
+    if (!satrec) return;
+    const now = new Date();
+    const d = doppler(now), look = lookAngles(now);
+    if (!d || !look) return;
+    const up = look.el >= MIN_EL;
+    const shift = (d.hz - BEACON_HZ) / 1000;
+    $('dopFreq').firstChild.textContent = (d.hz / 1e6).toFixed(5);
+    $('dopFreq').classList.toggle('below', !up);
+    $('dopSub').textContent = t('dopSub', (shift >= 0 ? '+' : '−') + Math.abs(shift).toFixed(2), d.range.toFixed(0),
+                                (d.rr >= 0 ? '+' : '−') + Math.abs(d.rr).toFixed(2));
+    setT($('dopTag'), up ? 'dopUp' : 'dopDown');
+    $('dopTag').classList.toggle('up', up);
+  }
+
   // 時計（月日＋秒）とカウントダウン欄のスカイマップ。通過中は 0.2 秒ごとに衛星の位置を更新
   let cdLastSec = -1, cdLive = false;
   setInterval(() => {
@@ -768,6 +776,7 @@
     } else if (cdLive) {
       cdLive = drawCdSky();
     }
+    updateDoppler();     // 最接近の前後は 1 秒に 100 Hz 以上変わるので 0.2 秒ごとに更新
   }, 200);
   let allPasses = [];
   let shownPasses = [];
@@ -1045,7 +1054,6 @@
     selectedPass = p;
     if (p) {
       const d = targetTime(p);
-      targetInput.value = toLocalInput(d);
       $('targetLabel').textContent = t(isAosTarget() ? 'aosLabel' : 'maxLabel', p, d);
       if (!timer) setT($('phase'), 'passSet');
     } else if (!timer) {
@@ -1156,12 +1164,11 @@
     root.classList.add('lang-' + l);
     document.querySelectorAll('.lang-sw button').forEach(b => b.classList.toggle('on', b.dataset.lang === l));
     document.querySelectorAll('[data-t]').forEach(el => { el.textContent = t(el.dataset.t); });
-    $('target').previousElementSibling.title = l === 'en' ? 'Set from the pass list, or enter manually' : 'パス一覧から自動設定・手入力可';
     showObs();
     renderTleStatus();
     if (satrec) renderPasses();
     if (selectedPass) $('targetLabel').textContent = t(isAosTarget() ? 'aosLabel' : 'maxLabel', selectedPass, targetTime(selectedPass));
-    else if (targetMs && $('targetLabel').textContent) $('targetLabel').textContent = t('manualTarget', new Date(targetMs));
+    updateDoppler();
     if (timer) tick();
     updateMap();
   }
