@@ -98,13 +98,15 @@
     .opt .last-ten { margin-left: auto; }
 
     .countdown {
-      display: flex; align-items: center; gap: 8px;
+      display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px;
       padding: 6px 10px 6px 12px;
-      position: relative;
     }
-    .countdown .cd-text { flex: 1; min-width: 0; text-align: center; padding-top: 20px; }
+    .countdown .cd-text { flex: 1; min-width: 0; text-align: center; }
+    .cd-top { flex: 1 1 100%; display: flex; align-items: center; gap: 8px; min-width: 0; }
+    .mel-info { font-size: 12px; color: #b0b6e0; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .mel-info b { color: #fbbf24; }
     .mute-btn {
-      position: absolute; top: 6px; left: 8px;
+      flex-shrink: 0;
       background: #1e1e45; color: #c8ccf0; border: 1px solid #3a3a7a;
       border-radius: 6px; font-size: 12px; padding: 2px 8px;
     }
@@ -236,7 +238,10 @@
   </div>
 
   <div class="card countdown" id="cd">
-    <button id="muteBtn" class="mute-btn" aria-pressed="false" data-t="mute">🔇 消音</button>
+    <div class="cd-top">
+      <button id="muteBtn" class="mute-btn" aria-pressed="false" data-t="mute">🔇 消音</button>
+      <span class="mel-info" id="melInfo"></span>
+    </div>
     <div class="cd-text">
       <div class="phase" id="phase" data-t="phaseInit">パス予測を計算しています…</div>
       <div class="big" id="big">--:--</div>
@@ -341,7 +346,7 @@
       dopSub: (khz, range, rr) => `シフト ${khz} kHz・距離 ${range} km（${rr} km/s）`,
       target: '目標：', maxEl: '最大仰角', maxElMel: '最大仰角(MEL)', lastTen: '最後の10秒は毎秒',
       start: '開始', stop: '停止', status: '📢 状況', mute: '🔇 消音', muted: '🔇 消音中', refresh: '更新',
-      toMel: 'MEL までのカウントダウン',
+      toMel: 'MEL までのカウントダウン', melInfo: '指定されたパスのMEL',
       whatMax: '最大仰角', statusNone: '今後 3 日間にパスはありません',
       statusUntil: (w, d) => `${w}は${d}です`,
       statusInPass: (w, d) => `いま通過中です。${w}は${d}です`,
@@ -394,7 +399,7 @@
       dopSub: (khz, range, rr) => `Shift ${khz} kHz · range ${range} km (${rr} km/s)`,
       target: 'Target:', maxEl: 'Max elev.', maxElMel: 'Max elev. (MEL)', lastTen: 'Last 10 s: every sec',
       start: 'Start', stop: 'Stop', status: '📢 Status', mute: '🔇 Mute', muted: '🔇 Muted', refresh: 'Refresh',
-      toMel: 'Counting down to MEL',
+      toMel: 'Counting down to MEL', melInfo: 'Selected pass MEL',
       whatMax: 'Maximum elevation', statusNone: 'No passes in the next 3 days.',
       statusInPass: (w, d) => `In pass now. ${w} in ${d}.`,
       statusUntil: (w, d) => `${w} in ${d}.`,
@@ -1088,6 +1093,9 @@
     drawPolarPlot(selectedPass, $('cdSky'), true, live);
     $('cdAos').textContent = selectedPass ? hms(selectedPass.aosTime) : '--:--:--';
     $('cdLos').textContent = selectedPass ? hms(selectedPass.losTime) : '--:--:--';
+    // 消音ボタンの横に、選択中のパスの MEL（最大仰角）の日時
+    const mel = selectedPass && selectedPass.maxElTime;
+    $('melInfo').innerHTML = mel ? `${t('melInfo')} <b>${md(mel)} ${hms(mel)}</b>` : '';
     return !!live;
   }
 
