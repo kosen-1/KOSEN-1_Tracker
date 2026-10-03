@@ -98,27 +98,23 @@
     .opt .last-ten { margin-left: auto; }
 
     .countdown {
-      display: flex; align-items: center; gap: 8px;
+      display: flex; flex-wrap: wrap; align-items: center; gap: 2px 8px;
       padding: 6px 10px 6px 12px;
-      position: relative;
     }
-    .countdown .cd-text { flex: 1; min-width: 0; text-align: center; padding-top: 20px; }
-    /* 消音ボタンと MEL の日時は左上の 1 行。右上の時計（右寄せ）にかからない幅に収める */
-    .cd-top {
-      position: absolute; top: 6px; left: 8px; right: 106px;
-      display: flex; align-items: center; gap: 5px; min-width: 0;
-    }
-    .mel-info { font-size: 10.5px; color: #b0b6e0; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .countdown .cd-text { flex: 1; min-width: 0; text-align: center; }
+    /* 一番上の行：消音ボタン・MEL の日時・時計。時計は常に欄の上端（右端）に置く */
+    .cd-top { flex: 1 1 100%; display: flex; align-items: center; gap: 4px; min-width: 0; }
+    .mel-info { flex: 1; min-width: 0; font-size: 10.5px; color: #b0b6e0; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .mel-info b { color: #fbbf24; }
     .mute-btn {
       flex-shrink: 0;
       background: #1e1e45; color: #c8ccf0; border: 1px solid #3a3a7a;
-      border-radius: 6px; font-size: 12px; padding: 2px 6px;
+      border-radius: 6px; font-size: 12px; padding: 2px 5px;
     }
     .mute-btn.on { background: #7f1d1d; border-color: #b91c1c; color: #fff; }
     .countdown canvas { display: block; }
     .cd-sky { flex-shrink: 0; width: 124px; display: flex; flex-direction: column; align-items: center; gap: 1px; }
-    .cd-clock { align-self: flex-end; font-size: 12px; font-weight: 700; color: #eef0ff; font-variant-numeric: tabular-nums; }
+    .cd-clock { flex-shrink: 0; font-size: 11px; font-weight: 700; color: #eef0ff; font-variant-numeric: tabular-nums; }
     .cd-times { width: 100%; display: flex; justify-content: space-between; gap: 6px; font-size: 10px; font-variant-numeric: tabular-nums; }
     .cd-times b { display: block; font-size: 11px; color: #eef0ff; }
     .cd-times .aos { color: #4ade80; }
@@ -246,6 +242,7 @@
     <div class="cd-top">
       <button id="muteBtn" class="mute-btn" aria-pressed="false" data-t="mute">🔇 消音</button>
       <span class="mel-info" id="melInfo"></span>
+      <span class="cd-clock" id="cdClock">--/-- --:--:--</span>
     </div>
     <div class="cd-text">
       <div class="phase" id="phase" data-t="phaseInit">パス予測を計算しています…</div>
@@ -254,7 +251,6 @@
       <div class="last" id="last"></div>
     </div>
     <div class="cd-sky">
-      <div class="cd-clock" id="cdClock">--/-- --:--:--</div>
       <canvas id="cdSky" data-size="106"></canvas>
       <div class="cd-times">
         <div class="aos">AOS<b id="cdAos">--:--:--</b></div>
