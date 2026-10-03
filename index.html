@@ -498,7 +498,8 @@
   function speak(text, force) {
     speechSynthesis.cancel();              // 前の読み上げが残っていたら打ち切る
     if (muted && !force) { $('last').textContent = '🔇 ' + text; return; }
-    const u = new SpeechSynthesisUtterance(text);
+    // 日本語の音声は「MEL」を「メル」と読むことがあるので、読み上げだけ「エムイーエル」にする（表示は MEL のまま）
+    const u = new SpeechSynthesisUtterance(LANG === 'ja' ? text.replace(/MEL/g, 'エムイーエル') : text);
     u.lang = LANG === 'en' ? 'en-US' : 'ja-JP';
     if (voices[LANG]) u.voice = voices[LANG];
     u.rate = LANG === 'en' ? 0.95 : 1.1;    // 英語は少しゆっくりめに
