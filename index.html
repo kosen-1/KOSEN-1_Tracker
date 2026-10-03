@@ -89,9 +89,7 @@
     .sky-card .sky-wrap { flex: 1; width: 100%; position: relative; min-height: 0; }
     .sky-card canvas { display: block; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
 
-    .dop-head { display: flex; align-items: center; flex-wrap: wrap; gap: 2px 6px; color: #9ca3d8; font-size: 11px; }
-    .dop-tag { margin-left: auto; white-space: nowrap; font-size: 11px; padding: 1px 7px; border-radius: 3px; background: #22224a; color: #9ca3d8; }
-    .dop-tag.up { background: #14532d; color: #4ade80; }
+    .dop-head { color: #9ca3d8; font-size: 11px; white-space: pre-line; line-height: 1.35; text-align: center; }   /* 見出しは「ビーコン435.525 MHz」「ドップラー補正」の 2 行（中央） */
     .dop-freq {
       font-size: 18px; font-weight: 700; line-height: 1.2; color: #eef0ff; white-space: nowrap;
       font-variant-numeric: tabular-nums; text-align: center;
@@ -247,7 +245,8 @@
   <div class="dash">
   <div class="dash-left">
   <div class="card">
-    <div class="dop-head"><span data-t="dopTitle">435.525 MHz ドップラー補正</span><span class="dop-tag" id="dopTag"></span></div>
+    <div class="dop-head" data-t="dopTitle">ビーコン435.525 MHz
+ドップラー補正</div>
     <div class="dop-freq" id="dopFreq">---.-----<span>MHz</span></div>
     <div class="dop-sub" id="dopSub">—</div>
   </div>
@@ -370,7 +369,7 @@
     ja: {
       badge: 'カウントダウン', lat: '緯度', lon: '経度', alt: '高度', look: '仰角 / 方位', sun: '日照',
       nextAos: '次の AOS まで', next90: '今後 90 分', past30: '過去 30 分', footprint: '◯ 可視範囲(3°)', follow: '追従',
-      dopTitle: '435.525 MHz ドップラー補正', dopUp: '📡 通過中', dopDown: () => `仰角 ${MIN_EL}° 未満`,
+      dopTitle: 'ビーコン435.525 MHz\nドップラー補正',
       dopSub: (khz, range, rr) => `シフト ${khz} kHz\n${range} km（${rr} km/s）`,
       target: 'カウントダウンの目標：', maxEl: '最大仰角', maxElMel: '最大仰角(MEL)', lastTen: '最後の10秒は毎秒',
       start: '開始', stop: '停止', status: '📢 状況', mute: '🔇 消音', muted: '🔇 消音中', refresh: '更新',
@@ -423,7 +422,7 @@
     en: {
       badge: 'Countdown', lat: 'Lat', lon: 'Lon', alt: 'Altitude', look: 'Elev / Az', sun: 'Sunlight',
       nextAos: 'Next AOS in', next90: 'Next 90 min', past30: 'Past 30 min', footprint: '◯ Coverage (3°)', follow: 'Follow',
-      dopTitle: 'Beacon 435.525 MHz Doppler', dopUp: '📡 In pass', dopDown: () => `Elev < ${MIN_EL}°`,
+      dopTitle: 'Beacon 435.525 MHz\nDoppler-corrected',
       dopSub: (khz, range, rr) => `Shift ${khz} kHz\n${range} km (${rr} km/s)`,
       target: 'Countdown target:', maxEl: 'Max elev.', maxElMel: 'Max elev. (MEL)', lastTen: 'Last 10 s: every sec',
       start: 'Start', stop: 'Stop', status: '📢 Status', mute: '🔇 Mute', muted: '🔇 Muted', refresh: 'Refresh',
@@ -917,8 +916,6 @@
     $('dopFreq').classList.toggle('below', !up);
     $('dopSub').textContent = t('dopSub', (shift >= 0 ? '+' : '−') + Math.abs(shift).toFixed(2), d.range.toFixed(0),
                                 (d.rr >= 0 ? '+' : '−') + Math.abs(d.rr).toFixed(2));
-    setT($('dopTag'), up ? 'dopUp' : 'dopDown');
-    $('dopTag').classList.toggle('up', up);
   }
 
   // 時計（月日＋秒）とカウントダウン欄のスカイマップ。通過中は 0.2 秒ごとに衛星の位置を更新
