@@ -98,22 +98,27 @@
     .opt .last-ten { margin-left: auto; }
 
     .countdown {
-      display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px;
+      display: flex; align-items: center; gap: 8px;
       padding: 6px 10px 6px 12px;
+      position: relative;
     }
-    .countdown .cd-text { flex: 1; min-width: 0; text-align: center; }
-    .cd-top { flex: 1 1 100%; display: flex; align-items: center; gap: 8px; min-width: 0; }
-    .mel-info { font-size: 12px; color: #b0b6e0; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .countdown .cd-text { flex: 1; min-width: 0; text-align: center; padding-top: 20px; }
+    /* 消音ボタンと MEL の日時は左上の 1 行。右上の時計（右寄せ）にかからない幅に収める */
+    .cd-top {
+      position: absolute; top: 6px; left: 8px; right: 106px;
+      display: flex; align-items: center; gap: 5px; min-width: 0;
+    }
+    .mel-info { font-size: 10.5px; color: #b0b6e0; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .mel-info b { color: #fbbf24; }
     .mute-btn {
       flex-shrink: 0;
       background: #1e1e45; color: #c8ccf0; border: 1px solid #3a3a7a;
-      border-radius: 6px; font-size: 12px; padding: 2px 8px;
+      border-radius: 6px; font-size: 12px; padding: 2px 6px;
     }
     .mute-btn.on { background: #7f1d1d; border-color: #b91c1c; color: #fff; }
     .countdown canvas { display: block; }
     .cd-sky { flex-shrink: 0; width: 124px; display: flex; flex-direction: column; align-items: center; gap: 1px; }
-    .cd-clock { font-size: 12px; font-weight: 700; color: #eef0ff; font-variant-numeric: tabular-nums; }
+    .cd-clock { align-self: flex-end; font-size: 12px; font-weight: 700; color: #eef0ff; font-variant-numeric: tabular-nums; }
     .cd-times { width: 100%; display: flex; justify-content: space-between; gap: 6px; font-size: 10px; font-variant-numeric: tabular-nums; }
     .cd-times b { display: block; font-size: 11px; color: #eef0ff; }
     .cd-times .aos { color: #4ade80; }
@@ -346,7 +351,7 @@
       dopSub: (khz, range, rr) => `シフト ${khz} kHz・距離 ${range} km（${rr} km/s）`,
       target: '目標：', maxEl: '最大仰角', maxElMel: '最大仰角(MEL)', lastTen: '最後の10秒は毎秒',
       start: '開始', stop: '停止', status: '📢 状況', mute: '🔇 消音', muted: '🔇 消音中', refresh: '更新',
-      toMel: 'MEL までのカウントダウン', melInfo: '指定されたパスのMEL',
+      toMel: 'MEL までのカウントダウン', melInfo: '指定パスのMEL',
       whatMax: '最大仰角', statusNone: '今後 3 日間にパスはありません',
       statusUntil: (w, d) => `${w}は${d}です`,
       statusInPass: (w, d) => `いま通過中です。${w}は${d}です`,
@@ -399,7 +404,7 @@
       dopSub: (khz, range, rr) => `Shift ${khz} kHz · range ${range} km (${rr} km/s)`,
       target: 'Target:', maxEl: 'Max elev.', maxElMel: 'Max elev. (MEL)', lastTen: 'Last 10 s: every sec',
       start: 'Start', stop: 'Stop', status: '📢 Status', mute: '🔇 Mute', muted: '🔇 Muted', refresh: 'Refresh',
-      toMel: 'Counting down to MEL', melInfo: 'Selected pass MEL',
+      toMel: 'Counting down to MEL', melInfo: 'Pass MEL',
       whatMax: 'Maximum elevation', statusNone: 'No passes in the next 3 days.',
       statusInPass: (w, d) => `In pass now. ${w} in ${d}.`,
       statusUntil: (w, d) => `${w} in ${d}.`,
