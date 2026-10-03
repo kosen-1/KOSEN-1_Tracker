@@ -80,46 +80,63 @@
       min-height: 36px;
     }
 
-    .dop-head { display: flex; align-items: center; gap: 8px; color: #9ca3d8; font-size: 12px; }
+    /* 地図の下は 2 列：左にドップラー補正とカウントダウン、右に大きな天空図 */
+    .dash { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 8px; margin-bottom: 8px; }
+    .dash .card { margin-bottom: 0; }
+    .dash-left { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+    .sky-card { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 8px; }
+    /* キャンバスは枠の高さに影響させない（枠の大きさに合わせて描く） */
+    .sky-card .sky-wrap { flex: 1; width: 100%; position: relative; min-height: 0; }
+    .sky-card canvas { display: block; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
+
+    .dop-head { display: flex; align-items: center; flex-wrap: wrap; gap: 2px 6px; color: #9ca3d8; font-size: 11px; }
     .dop-tag { margin-left: auto; white-space: nowrap; font-size: 11px; padding: 1px 7px; border-radius: 3px; background: #22224a; color: #9ca3d8; }
     .dop-tag.up { background: #14532d; color: #4ade80; }
     .dop-freq {
-      font-size: 30px; font-weight: 700; line-height: 1.15; color: #eef0ff;
+      font-size: 18px; font-weight: 700; line-height: 1.2; color: #eef0ff; white-space: nowrap;
       font-variant-numeric: tabular-nums; text-align: center;
     }
-    .dop-freq span { font-size: 15px; font-weight: 400; color: #a0a8e0; margin-left: 4px; }
+    .dop-freq span { font-size: 11px; font-weight: 400; color: #a0a8e0; margin-left: 3px; }
     .dop-freq.below { color: #7880c8; }
-    .dop-sub { font-size: 12px; color: #b0b6e0; text-align: center; font-variant-numeric: tabular-nums; }
+    .dop-sub { font-size: 11px; color: #b0b6e0; text-align: center; font-variant-numeric: tabular-nums; white-space: pre-line; }
 
-    .opt { display: flex; align-items: center; gap: 6px; margin-top: 6px; font-size: 13px; color: #c8ccf0; }
+    .opt { display: flex; align-items: center; gap: 2px 8px; margin-top: 6px; font-size: 12px; color: #c8ccf0; }
     .opt input { width: 16px; height: 16px; }
     .opt { flex-wrap: wrap; }
     .opt label { display: flex; align-items: center; gap: 4px; }
     .opt .last-ten { margin-left: auto; }
+    .opt-card { padding: 4px 8px 4px 10px; display: flex; align-items: center; gap: 6px; }
+    .opt-rows { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+    .opt-card .opt { font-size: 11.5px; gap: 2px 6px; white-space: nowrap; margin-top: 0; }
+    .opt-card .opt input { width: 14px; height: 14px; }
+    .opt-card .opt .last-ten { margin-left: 0; }
+    /* 「カウントダウンの目標：◉AOS ○最大仰角(MEL)」を 1 行に収める */
+    .opt-card .opt:first-child { font-size: 11px; gap: 0 5px; flex-wrap: nowrap; }
+    .opt-card .opt:first-child label { gap: 2px; }
+    .opt-card .opt:first-child > [data-t=target] { margin-right: -2px; }
 
     .countdown {
       display: flex; flex-wrap: wrap; align-items: center; gap: 2px 8px;
       padding: 6px 10px 6px 12px;
     }
     .countdown .cd-text { flex: 1; min-width: 0; text-align: center; }
-    /* 一番上の行：消音ボタン・MEL の日時・時計。時計は常に欄の上端（右端）に置く */
-    .cd-top { flex: 1 1 100%; display: flex; align-items: center; gap: 4px; min-width: 0; }
-    .mel-info { flex: 1; min-width: 0; text-align: right; font-size: 10.5px; color: #b0b6e0; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .mel-info b { color: #fbbf24; font-size: 11px; font-weight: 700; }   /* 右の時計と同じ字体 */
     .mute-btn {
       flex-shrink: 0;
       background: #1e1e45; color: #c8ccf0; border: 1px solid #3a3a7a;
       border-radius: 6px; font-size: 12px; padding: 2px 5px;
     }
     .mute-btn.on { background: #7f1d1d; border-color: #b91c1c; color: #fff; }
-    .countdown canvas { display: block; }
-    .cd-sky { flex-shrink: 0; width: 124px; display: flex; flex-direction: column; align-items: center; gap: 1px; }
-    .cd-clock { flex-shrink: 0; font-size: 11px; font-weight: 700; color: #eef0ff; font-variant-numeric: tabular-nums; }
-    .cd-times { width: 100%; display: flex; justify-content: space-between; gap: 6px; font-size: 10px; font-variant-numeric: tabular-nums; }
-    .cd-times b { display: block; font-size: 11px; color: #eef0ff; }
+    /* 現在時刻は右の欄の幅いっぱい（文字の大きさは fitClock() で決める） */
+    .cd-clock { width: 100%; flex-shrink: 0; display: flex; justify-content: space-between; align-items: baseline; font-size: 11px; font-weight: 700; color: #eef0ff; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .cd-clock span { font-size: 0.85em; font-weight: 400; color: #9ca3d8; margin-right: 0.3em; }
+    /* AOS・MEL・LOS の 3 列。MEL は欄の真ん中にそろえる */
+    .cd-times { width: 100%; flex-shrink: 0; display: grid; grid-template-columns: 1fr auto 1fr; gap: 2px; font-size: 10px; font-variant-numeric: tabular-nums; }
+    .cd-times .mel { color: #fbbf24; text-align: center; }
+    .cd-times b { display: block; font-size: 10.5px; color: #eef0ff; white-space: nowrap; }
     .cd-times .aos { color: #4ade80; }
     .cd-times .los { color: #f87171; text-align: right; }
-    .countdown .phase { font-size: 13px; color: #9ca3d8; min-height: 17px; }
+    /* カウントダウン中の表示（「📡 AOS（受信開始）です」など）は狭い列で 2 行になるので、2 行分の高さを確保しておく */
+    .countdown .phase { font-size: 13px; color: #9ca3d8; min-height: 3em; }
     .countdown .big {
       font-size: 36px; font-weight: 700;
       font-variant-numeric: tabular-nums;
@@ -129,8 +146,9 @@
     }
     .countdown.active .big { color: #fcd34d; }
     .countdown.done .big   { color: #4ade80; }
-    .countdown .target { font-size: 13px; color: #b0b6e0; }
-    .countdown .last { font-size: 13px; color: #60a5fa; margin-top: 2px; min-height: 17px; }
+    .countdown .target { font-size: 12px; color: #b0b6e0; }
+    /* 読み上げた文は 1 行（長いときは「…」）。折り返して欄が伸び、開始・停止ボタンが下がらないように */
+    .countdown .last { font-size: 12px; color: #60a5fa; margin-top: 2px; min-height: 17px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
     .btns { display: flex; gap: 8px; }
     .btns button {
@@ -183,8 +201,7 @@
     .vis-tag.no  { background: #22224a; color: #9ca3d8; }
     body.running .pass { opacity: 0.5; }
     .map-card { padding: 0; overflow: hidden; }
-    /* ISS-Alert（150px）の 1.5 倍。開始ボタンが 1 画面に収まる高さ */
-    #map { height: 225px; background: #0b0b20; }
+    #map { height: 180px; background: #0b0b20; }   /* 実際の高さは fitMap() で画面に合わせる */
     .map-info {
       display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px 8px;
       padding: 5px 10px; font-size: 10px; color: #9ca3d8;
@@ -227,36 +244,46 @@
     </div>
   </div>
 
+  <div class="dash">
+  <div class="dash-left">
   <div class="card">
-    <div class="dop-head"><span data-t="dopTitle">ビーコン 435.525 MHz（ドップラー補正）</span><span class="dop-tag" id="dopTag"></span></div>
+    <div class="dop-head"><span data-t="dopTitle">435.525 MHz ドップラー補正</span><span class="dop-tag" id="dopTag"></span></div>
     <div class="dop-freq" id="dopFreq">---.-----<span>MHz</span></div>
     <div class="dop-sub" id="dopSub">—</div>
-    <div class="opt"><span data-t="target">目標：</span>
-      <label><input type="radio" name="mode" value="aos" checked> AOS</label>
-      <label><input type="radio" name="mode" value="max"> <span data-t="maxElMel">最大仰角(MEL)</span></label>
-      <label class="last-ten"><input type="checkbox" id="lastTen"><span data-t="lastTen">最後の10秒は毎秒</span></label>
-    </div>
   </div>
 
   <div class="card countdown" id="cd">
-    <div class="cd-top">
-      <button id="muteBtn" class="mute-btn" aria-pressed="false" data-t="mute">🔇 消音</button>
-      <span class="mel-info" id="melInfo"></span>
-      <span class="cd-clock" id="cdClock">--/-- --:--:--</span>
-    </div>
     <div class="cd-text">
       <div class="phase" id="phase" data-t="phaseInit">パス予測を計算しています…</div>
       <div class="big" id="big">--:--</div>
       <div class="target" id="targetLabel"></div>
       <div class="last" id="last"></div>
     </div>
-    <div class="cd-sky">
-      <canvas id="cdSky" data-size="106"></canvas>
-      <div class="cd-times">
-        <div class="aos">AOS<b id="cdAos">--:--:--</b></div>
-        <div class="los">LOS<b id="cdLos">--:--:--</b></div>
+  </div>
+  </div>
+
+  <div class="card sky-card">
+    <div class="cd-clock"><span data-t="nowTime">現在時刻</span><b id="cdClock">--/-- --:--:--</b></div>
+    <div class="sky-wrap"><canvas id="cdSky" data-size="150"></canvas></div>
+    <div class="cd-times">
+      <div class="aos">AOS<b id="cdAos">--:--:--</b></div>
+      <div class="mel">MEL<b id="cdMel">--:--:--</b></div>
+      <div class="los">LOS<b id="cdLos">--:--:--</b></div>
+    </div>
+  </div>
+  </div>
+
+  <div class="card opt-card">
+    <div class="opt-rows">
+      <div class="opt"><span data-t="target">カウントダウンの目標：</span>
+        <label><input type="radio" name="mode" value="aos" checked> AOS</label>
+        <label><input type="radio" name="mode" value="max"> <span data-t="maxElMel">最大仰角(MEL)</span></label>
+      </div>
+      <div class="opt">
+        <label class="last-ten"><input type="checkbox" id="lastTen"><span data-t="lastTen">最後の10秒は毎秒</span></label>
       </div>
     </div>
+    <button id="muteBtn" class="mute-btn" aria-pressed="false" data-t="mute">🔇 消音</button>
   </div>
 
   <div class="btns" style="margin-bottom:8px">
@@ -343,11 +370,11 @@
     ja: {
       badge: 'カウントダウン', lat: '緯度', lon: '経度', alt: '高度', look: '仰角 / 方位', sun: '日照',
       nextAos: '次の AOS まで', next90: '今後 90 分', past30: '過去 30 分', footprint: '◯ 可視範囲(3°)', follow: '追従',
-      dopTitle: 'ビーコン 435.525 MHz（ドップラー補正）', dopUp: '📡 通過中', dopDown: () => `仰角 ${MIN_EL}° 未満`,
-      dopSub: (khz, range, rr) => `シフト ${khz} kHz・距離 ${range} km（${rr} km/s）`,
-      target: '目標：', maxEl: '最大仰角', maxElMel: '最大仰角(MEL)', lastTen: '最後の10秒は毎秒',
+      dopTitle: '435.525 MHz ドップラー補正', dopUp: '📡 通過中', dopDown: () => `仰角 ${MIN_EL}° 未満`,
+      dopSub: (khz, range, rr) => `シフト ${khz} kHz\n${range} km（${rr} km/s）`,
+      target: 'カウントダウンの目標：', maxEl: '最大仰角', maxElMel: '最大仰角(MEL)', lastTen: '最後の10秒は毎秒',
       start: '開始', stop: '停止', status: '📢 状況', mute: '🔇 消音', muted: '🔇 消音中', refresh: '更新',
-      toMel: 'MEL までのカウントダウン', melInfo: '指定パスのMEL',
+      toMel: 'MEL までのカウントダウン', nowTime: '現在時刻',
       whatMax: '最大仰角', statusNone: '今後 3 日間にパスはありません',
       statusUntil: (w, d) => `${w}は${d}です`,
       statusInPass: (w, d) => `いま通過中です。${w}は${d}です`,
@@ -396,15 +423,15 @@
     en: {
       badge: 'Countdown', lat: 'Lat', lon: 'Lon', alt: 'Altitude', look: 'Elev / Az', sun: 'Sunlight',
       nextAos: 'Next AOS in', next90: 'Next 90 min', past30: 'Past 30 min', footprint: '◯ Coverage (3°)', follow: 'Follow',
-      dopTitle: 'Beacon 435.525 MHz (Doppler-corrected)', dopUp: '📡 In pass', dopDown: () => `Elev < ${MIN_EL}°`,
-      dopSub: (khz, range, rr) => `Shift ${khz} kHz · range ${range} km (${rr} km/s)`,
-      target: 'Target:', maxEl: 'Max elev.', maxElMel: 'Max elev. (MEL)', lastTen: 'Last 10 s: every sec',
+      dopTitle: 'Beacon 435.525 MHz Doppler', dopUp: '📡 In pass', dopDown: () => `Elev < ${MIN_EL}°`,
+      dopSub: (khz, range, rr) => `Shift ${khz} kHz\n${range} km (${rr} km/s)`,
+      target: 'Countdown target:', maxEl: 'Max elev.', maxElMel: 'Max elev. (MEL)', lastTen: 'Last 10 s: every sec',
       start: 'Start', stop: 'Stop', status: '📢 Status', mute: '🔇 Mute', muted: '🔇 Muted', refresh: 'Refresh',
-      toMel: 'Counting down to MEL', melInfo: 'Pass MEL',
+      toMel: 'Counting down to MEL', nowTime: 'Now',
       whatMax: 'Maximum elevation', statusNone: 'No passes in the next 3 days.',
-      statusInPass: (w, d) => `In pass now. ${w} in ${d}.`,
-      statusUntil: (w, d) => `${w} in ${d}.`,
-      durHM: (h, m) => `${h} ${h === 1 ? 'hour' : 'hours'} ${m} ${m === 1 ? 'minute' : 'minutes'}`,
+      statusInPass: (w, d) => `In pass now. ${w} is in ${d}.`,
+      statusUntil: (w, d) => `${w} is in ${d}.`,
+      durHM: (h, m) => `${h} ${h === 1 ? 'hour' : 'hours'}` + (m ? ` and ${m} ${m === 1 ? 'minute' : 'minutes'}` : ''),
       durM: m => `${m} ${m === 1 ? 'minute' : 'minutes'}`, durS: s => `${s} seconds`,
       sayToMel: s => `${s} seconds to MEL`,
       obsPoint: '📍 Observer: ', geo: '📍 My location', locating: 'Locating…', backHome: 'Back to NIT Kochi',
@@ -478,14 +505,22 @@
   const EN_FEMALE_ANDROID = /en-us-x-(sfg|tpc|tpf|iob|iog)/i;
   // 効果音的な声・合成感の強い声は除く（アルファベット順で先に来て選ばれてしまうため）
   const EN_EXCLUDE = /\b(Albert|Bad News|Bahh|Bells|Boing|Bubbles|Cellos|Fred|Good News|Jester|Junior|Kathy|Organ|Ralph|Superstar|Trinoids|Whisper|Wobble|Zarvox|Eddy|Flo|Grandma|Grandpa|Reed|Rocko|Sandy|Shelley)\b/i;
-  const voiceQuality = v => /premium/i.test(v.name) ? 2 : /enhanced|improved/i.test(v.name) ? 1 : 0;
+  // 声の品質：プレミアム > 拡張 > 標準。iPhone / Mac は端末の言語で「Ava（プレミアム）」のように表示されるので両方見る
+  const voiceQuality = v => {
+    const s = `${v.name} ${v.voiceURI}`;
+    return /premium|プレミアム/i.test(s) ? 2 : /enhanced|improved|拡張|高品質/i.test(s) ? 1 : 0;
+  };
+  // 品質を最優先し、同じ品質なら EN_FEMALE の並び順で選ぶ（高品質の声を入れた端末ではそれが選ばれる）
   function pickEnVoice(all) {
     const en = all.filter(v => v.lang && /^en[-_]/i.test(v.lang) && !EN_EXCLUDE.test(v.name));
-    for (const name of EN_FEMALE) {
-      const hit = en.filter(v => new RegExp(`\\b${name}\\b`, 'i').test(v.name))
-                    .sort((a, b) => voiceQuality(b) - voiceQuality(a));
-      if (hit.length) return hit[0];
-    }
+    let best = null, bestScore = -1;
+    EN_FEMALE.forEach((name, i) => {
+      for (const v of en.filter(v => new RegExp(`\\b${name}\\b`, 'i').test(v.name))) {
+        const score = voiceQuality(v) * 100 + (EN_FEMALE.length - i);
+        if (score > bestScore) { best = v; bestScore = score; }
+      }
+    });
+    if (best) return best;
     return en.find(v => EN_FEMALE_ANDROID.test(v.name) || EN_FEMALE_ANDROID.test(v.voiceURI)) ||
            en.find(v => /female/i.test(v.name)) ||
            en.find(v => /^en[-_]US$/i.test(v.lang) && v.default) ||
@@ -494,21 +529,40 @@
   function pickVoice() {
     const all = speechSynthesis.getVoices();
     const ja = all.filter(v => v.lang && v.lang.replace('_','-').startsWith('ja'));
-    voices.ja = ja.find(v => v.localService) || ja[0] || null;
+    const jaLocal = ja.filter(v => v.localService);
+    voices.ja = (jaLocal.length ? jaLocal : ja).sort((a, b) => voiceQuality(b) - voiceQuality(a))[0] || null;
     voices.en = pickEnVoice(all);
   }
   pickVoice();
   speechSynthesis.onvoiceschanged = pickVoice;
 
+  // 英語の声でも端末の言語が日本語だと数字を「なな」「きゅう」と読むことがあるので、
+  // 英語の読み上げでは数字を英単語にしてから渡す（表示は数字のまま）
+  const ONES = ['zero','one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve',
+                'thirteen','fourteen','fifteen','sixteen','seventeen','eighteen','nineteen'];
+  const TENS = ['','','twenty','thirty','forty','fifty','sixty','seventy','eighty','ninety'];
+  function numWords(n) {
+    if (n < 20) return ONES[n];
+    if (n < 100) return TENS[Math.floor(n / 10)] + (n % 10 ? '-' + ONES[n % 10] : '');
+    if (n < 1000) return ONES[Math.floor(n / 100)] + ' hundred' + (n % 100 ? ' ' + numWords(n % 100) : '');
+    if (n < 10000) return numWords(Math.floor(n / 1000)) + ' thousand' + (n % 1000 ? ' ' + numWords(n % 1000) : '');
+    return String(n);
+  }
+  function spokenText(text) {
+    if (LANG === 'ja') return text.replace(/MEL/g, 'エムイーエル');
+    return text.replace(/\b(AOS|LOS|MEL)\b/g, w => w.split('').join('-'))   // A-O-S のように 1 文字ずつ
+               .replace(/\d+/g, d => numWords(Number(d)));
+  }
+
   // force: 消音中でも読み上げる（「状況」ボタン）
   function speak(text, force) {
     speechSynthesis.cancel();              // 前の読み上げが残っていたら打ち切る
     if (muted && !force) { $('last').textContent = '🔇 ' + text; return; }
-    // 日本語の音声は「MEL」を「メル」と読むことがあるので、読み上げだけ「エムイーエル」にする（表示は MEL のまま）
-    const u = new SpeechSynthesisUtterance(LANG === 'ja' ? text.replace(/MEL/g, 'エムイーエル') : text);
+    // 日本語は「MEL」を「エムイーエル」、英語は数字を英単語にして読む（表示はそのまま）
+    const u = new SpeechSynthesisUtterance(spokenText(text));
     u.lang = LANG === 'en' ? 'en-US' : 'ja-JP';
     if (voices[LANG]) u.voice = voices[LANG];
-    u.rate = LANG === 'en' ? 0.95 : 1.1;    // 英語は少しゆっくりめに
+    u.rate = LANG === 'en' ? 1.0 : 1.1;
     u.volume = 1;
     speechSynthesis.speak(u);
     $('last').textContent = '🔊 ' + text;
@@ -516,6 +570,8 @@
   // iOS はタップの中で一度話さないと音が出ないので、消音中は無音の発話でロックを解除しておく
   function unlockSpeech() {
     const u = new SpeechSynthesisUtterance(' ');
+    u.lang = LANG === 'en' ? 'en-US' : 'ja-JP';   // 既定の声（日本語）が使われないよう、今の言語の声にする
+    if (voices[LANG]) u.voice = voices[LANG];
     u.volume = 0;
     speechSynthesis.speak(u);
   }
@@ -649,6 +705,8 @@
     speak(t('sayStart') + t(isAosTarget() ? 'sayStartAos' : 'sayStartMax', p));
     acquireWakeLock();
 
+    // カウントダウン中は欄の高さを開始時より縮めない（文の行数が変わってもボタンが上下しないように）
+    $('cd').style.minHeight = $('cd').offsetHeight + 'px';
     $('startBtn').disabled = true;
     $('stopBtn').disabled = false;
     $('lastTen').disabled = true;
@@ -665,6 +723,7 @@
     clearInterval(timer);
     timer = null;
     releaseWakeLock();
+    $('cd').style.minHeight = '';
     $('startBtn').disabled = false;
     $('stopBtn').disabled = true;
     $('lastTen').disabled = false;
@@ -730,8 +789,11 @@
 
   // ---------- 地図 ----------
   const OBS_LATLON = [obs.lat, obs.lon];
-  const map = L.map('map', { zoomControl: false, worldCopyJump: false, attributionControl: true })
-    .setView(OBS_LATLON, 2);
+  // 上下は世界地図の端（±85°）より外を映さない。極付近を通るときに地図の外の黒い部分ばかりにならないように
+  const map = L.map('map', {
+    zoomControl: false, worldCopyJump: false, attributionControl: true,
+    maxBounds: L.latLngBounds([-85.05, -100000], [85.05, 100000]), maxBoundsViscosity: 1,
+  }).setView(OBS_LATLON, 2);
   L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
     maxZoom: 8, minZoom: 1,
     attribution: 'Tiles &copy; Esri',
@@ -800,7 +862,10 @@
     const adj = Math.round((lon - updateMap.baseLon) / 360) * 360;
     pastLine.setLatLngs(updateMap.past.map(([a, b]) => [a, b + adj]));
     futureLine.setLatLngs(updateMap.future.map(([a, b]) => [a, b + adj]));
-    if ($('follow').checked) map.panTo(ll, { animate: false });
+    if ($('follow').checked) {
+      map.panTo(ll, { animate: false });
+      map.panInsideBounds(map.options.maxBounds, { animate: false });   // 極付近では地図の端で止める
+    }
 
     // 数値表示
     const look = lookAngles(now);
@@ -995,7 +1060,7 @@
   function prepCanvas(canvas) {
     const size = Number(canvas.dataset.size);
     const dpr  = window.devicePixelRatio || 1;
-    if (canvas.width !== size * dpr) {
+    if (canvas.width !== size * dpr || canvas.style.width !== size + 'px') {
       canvas.width = canvas.height = size * dpr;
       canvas.style.width = canvas.style.height = size + 'px';
     }
@@ -1083,6 +1148,7 @@
       ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
     }
   }
+  window.addEventListener('resize', () => drawCdSky());
   // カウントダウン欄のスカイマップ（選択中のパス＋現在位置）。通過中なら true
   function drawCdSky() {
     let live = null;
@@ -1091,12 +1157,14 @@
       if (now >= selectedPass.aosTime - 60000 && now <= selectedPass.losTime.getTime() + 60000)
         live = lookAngles(new Date(now));
     }
+    // 天空図は右の列の幅（と高さ）に合わせて描く
+    const wrap = $('cdSky').parentElement;
+    const size = Math.floor(Math.min(wrap.clientWidth, wrap.clientHeight));
+    if (size > 60) $('cdSky').dataset.size = size;
     drawPolarPlot(selectedPass, $('cdSky'), true, live);
     $('cdAos').textContent = selectedPass ? hms(selectedPass.aosTime) : '--:--:--';
     $('cdLos').textContent = selectedPass ? hms(selectedPass.losTime) : '--:--:--';
-    // 消音ボタンの横に、選択中のパスの MEL（最大仰角）の日時
-    const mel = selectedPass && selectedPass.maxElTime;
-    $('melInfo').innerHTML = mel ? `${t('melInfo')} <b>${md(mel)} ${hms(mel)}</b>` : '';
+    $('cdMel').textContent = selectedPass ? hms(selectedPass.maxElTime) : '--:--:--';
     return !!live;
   }
 
@@ -1155,6 +1223,7 @@
     if (timer) return;
     renderPasses();
     if (shownPasses.length) selectPass(shownPasses[0]);
+    fitMap();
   }
   document.querySelectorAll('input[name=mode]').forEach(r => r.addEventListener('change', () => {
     // 選択中のパスはそのままに、目標時刻だけ AOS / 最大仰角で切り替える
@@ -1259,9 +1328,44 @@
     updateDoppler();
     if (timer) tick();
     updateMap();
+    fitLayout();     // 言語で文字の長さが変わるので合わせ直す
   }
   document.querySelectorAll('.lang-sw button').forEach(b =>
     b.addEventListener('click', () => { if (b.dataset.lang !== LANG) applyLang(b.dataset.lang); }));
+  // ---------- 画面に合わせた大きさ ----------
+  // 現在時刻：いちばん幅をとる日時（12/31 00:00:00）で、欄の幅いっぱいになる文字の大きさを求める
+  function fitClock() {
+    const el = document.querySelector('.cd-clock'), b = $('cdClock');
+    const keep = b.textContent;
+    el.style.fontSize = '20px';
+    b.textContent = '12/31 00:00:00';
+    const pcs = getComputedStyle(el.parentElement);
+    const w = el.parentElement.clientWidth - parseFloat(pcs.paddingLeft) - parseFloat(pcs.paddingRight) - 2;
+    el.style.width = 'max-content';
+    const need = el.scrollWidth;
+    el.style.width = '';
+    b.textContent = keep;
+    el.style.fontSize = Math.max(10, Math.min(28, Math.floor(20 * w / need * 0.96 * 10) / 10)) + 'px';   // 字形の差に 4% の余裕
+  }
+  // 地図：「開始」ボタンが画面の下端ぎりぎりになる高さにする。
+  // カウントダウン中は低くする方向だけ（ボタンが画面の外に出ないように。高くして画面を動かすことはしない）
+  function fitMap() {
+    const m = $('map');
+    const bottom = $('startBtn').getBoundingClientRect().bottom + window.scrollY;
+    const h = Math.round(m.clientHeight + (window.innerHeight - 4) - bottom);
+    let nh = Math.max(150, Math.min(420, h));
+    if (timer) nh = Math.min(nh, m.clientHeight);
+    if (Math.abs(nh - m.clientHeight) > 2) { m.style.height = nh + 'px'; map.invalidateSize(); }
+  }
+  function fitLayout() { fitClock(); drawCdSky(); fitMap(); }
+  window.addEventListener('resize', fitLayout);
+  // 地図より下の欄の高さ（文言の行数など）が変わったら、地図の高さを合わせ直す
+  if ('ResizeObserver' in window) {
+    const ro = new ResizeObserver(() => fitMap());
+    document.querySelectorAll('.dash, .opt-card, .btns').forEach(el => ro.observe(el));
+  }
+  setInterval(fitMap, 1000);   // 取りこぼし対策（ずれが 2px を超えたときだけ変える）
+
   applyLang(LANG);
   refreshTLE();
 </script>
