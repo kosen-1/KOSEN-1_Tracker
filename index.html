@@ -100,8 +100,15 @@
     .countdown {
       display: flex; align-items: center; gap: 8px;
       padding: 6px 10px 6px 12px;
+      position: relative;
     }
-    .countdown .cd-text { flex: 1; min-width: 0; text-align: center; }
+    .countdown .cd-text { flex: 1; min-width: 0; text-align: center; padding-top: 20px; }
+    .mute-btn {
+      position: absolute; top: 6px; left: 8px;
+      background: #1e1e45; color: #c8ccf0; border: 1px solid #3a3a7a;
+      border-radius: 6px; font-size: 12px; padding: 2px 8px;
+    }
+    .mute-btn.on { background: #7f1d1d; border-color: #b91c1c; color: #fff; }
     .countdown canvas { display: block; }
     .cd-sky { flex-shrink: 0; width: 124px; display: flex; flex-direction: column; align-items: center; gap: 1px; }
     .cd-clock { font-size: 12px; font-weight: 700; color: #eef0ff; font-variant-numeric: tabular-nums; }
@@ -131,7 +138,7 @@
     }
     #startBtn { background: #1d4ed8; flex: 2; }
     #stopBtn  { background: #7f1d1d; }
-    #testBtn  { background: #1e1e45; color: #c8ccf0; border: 1px solid #3a3a7a; font-size: 14px; }
+    #statusBtn { background: #1e1e45; color: #c8ccf0; border: 1px solid #3a3a7a; font-size: 14px; }
     .btns button:disabled { background: #1e2a3a; color: #556; }
 
     .note { font-size: 12px; color: #9098c8; line-height: 1.7; }
@@ -223,12 +230,13 @@
     <div class="dop-sub" id="dopSub">—</div>
     <div class="opt"><span data-t="target">目標：</span>
       <label><input type="radio" name="mode" value="aos" checked> AOS</label>
-      <label><input type="radio" name="mode" value="max"> <span data-t="maxEl">最大仰角</span></label>
+      <label><input type="radio" name="mode" value="max"> <span data-t="maxElMel">最大仰角(MEL)</span></label>
       <label class="last-ten"><input type="checkbox" id="lastTen"><span data-t="lastTen">最後の10秒は毎秒</span></label>
     </div>
   </div>
 
   <div class="card countdown" id="cd">
+    <button id="muteBtn" class="mute-btn" aria-pressed="false" data-t="mute">🔇 消音</button>
     <div class="cd-text">
       <div class="phase" id="phase" data-t="phaseInit">パス予測を計算しています…</div>
       <div class="big" id="big">--:--</div>
@@ -248,7 +256,7 @@
   <div class="btns" style="margin-bottom:8px">
     <button id="startBtn" data-t="start">開始</button>
     <button id="stopBtn" disabled data-t="stop">停止</button>
-    <button id="testBtn" data-t="test">🔊 テスト</button>
+    <button id="statusBtn" data-t="status">📢 状況</button>
   </div>
   <div class="warn" id="warn"></div>
 
@@ -273,10 +281,13 @@
       <li>観測地点は高知高専です。「📍 現在地」で端末の位置に切り替えると、その地点でパスを計算し直します（地点は端末に記憶します）。</li>
       <li>目標（AOS か最大仰角）の 5 分前から 5 秒ごとに「あと○秒」、目標の後は LOS（受信終了）まで 5 秒ごとに「LOSまであと○秒」と読み上げます。</li>
       <li>上の欄に、KOSEN-1 のビーコン 435.525 MHz をドップラー補正したリアルタイムの受信周波数を表示します（観測地点基準）。</li>
-      <li class="ios-only">iPhone では最初に「開始」か「🔊 テスト」をタップしないと音声が出ません。</li>
+      <li>目標が AOS のときは、AOS の後は MEL（最大仰角）まで 5 秒ごとに「MELまであと○秒」、MEL の後は LOS まで「LOSまであと○秒」と読み上げます。</li>
+      <li>カウントダウン欄左上の「🔇 消音」で読み上げをすぐに止め、もう一度押すと元に戻ります（表示は続きます）。</li>
+      <li>「📢 状況」を押すと、選択中のパス（なければ直近のパス）の目標（AOS か最大仰角）までの時間を読み上げます。</li>
+      <li class="ios-only">iPhone では最初に「開始」か「📢 状況」をタップしないと音声が出ません。</li>
       <li class="ios-only">カウントダウン中は Safari を前面に表示したままにしてください（画面ロック・アプリ切替で停止します）。対応機種では自動で画面スリープを防止します。</li>
       <li class="ios-only">音量ボタンで音量を上げ、消音モードも確認してください。</li>
-      <li class="android-only">最初に「🔊 テスト」で「あと300秒」と聞こえるか確認してください。</li>
+      <li class="android-only">最初に「📢 状況」を押して読み上げが聞こえるか確認してください。</li>
       <li class="android-only">声が出ない・日本語にならない場合は、端末の「設定」→「システム」→「言語と入力」→「テキスト読み上げの出力」で「Google 音声サービス」の日本語音声データをインストールしてください（項目名は機種により異なります）。</li>
       <li class="android-only">カウントダウン中は Chrome を前面に表示したままにしてください（画面オフ・アプリ切替で停止します）。画面スリープは自動で防止します。</li>
       <li class="android-only">音量ボタンで「メディア」の音量を上げ、マナーモードも確認してください。</li>
@@ -287,10 +298,13 @@
       <li>The default observer is NIT Kochi. Tap “📍 My location” to recompute passes for your device’s position (remembered on this device).</li>
       <li>From 5 minutes before the target (AOS or max elevation), the remaining seconds are announced every 5 seconds; after the target, the seconds to LOS (loss of signal) are announced every 5 seconds until LOS.</li>
       <li>The panel at the top shows the real-time Doppler-corrected receive frequency of KOSEN-1’s 435.525 MHz beacon for the observer location.</li>
-      <li class="ios-only">On iPhone, no sound plays until you tap “Start” or “🔊 Test” once.</li>
+      <li>With the AOS target, after AOS the seconds to MEL (max elevation) are announced every 5 seconds, then the seconds to LOS after MEL.</li>
+      <li>“🔇 Mute” at the top left of the countdown silences the announcements immediately; tap again to restore (the display keeps running).</li>
+      <li>“📢 Status” announces the time to the target (AOS or max elevation) of the selected pass, or the next pass if none is selected.</li>
+      <li class="ios-only">On iPhone, no sound plays until you tap “Start” or “📢 Status” once.</li>
       <li class="ios-only">Keep Safari in the foreground during the countdown (locking the screen or switching apps stops it). The screen is kept awake automatically on supported devices.</li>
       <li class="ios-only">Turn up the volume with the volume buttons and check the silent switch.</li>
-      <li class="android-only">First tap “🔊 Test” and check that you hear “300 seconds”.</li>
+      <li class="android-only">First tap “📢 Status” and check that you hear the announcement.</li>
       <li class="android-only">If there is no voice, install English voice data for “Speech Services by Google” under Settings → System → Languages &amp; input → Text-to-speech output (menu names vary by device).</li>
       <li class="android-only">Keep Chrome in the foreground during the countdown (turning off the screen or switching apps stops it). The screen is kept awake automatically.</li>
       <li class="android-only">Turn up the “Media” volume with the volume buttons and check silent / Do Not Disturb mode.</li>
@@ -325,8 +339,14 @@
       nextAos: '次の AOS まで', next90: '今後 90 分', past30: '過去 30 分', footprint: '◯ 可視範囲(3°)', follow: '追従',
       dopTitle: 'ビーコン 435.525 MHz（ドップラー補正）', dopUp: '📡 通過中', dopDown: () => `仰角 ${MIN_EL}° 未満`,
       dopSub: (khz, range, rr) => `シフト ${khz} kHz・距離 ${range} km（${rr} km/s）`,
-      target: '目標：', maxEl: '最大仰角', lastTen: '最後の10秒は毎秒',
-      start: '開始', stop: '停止', test: '🔊 テスト', refresh: '更新',
+      target: '目標：', maxEl: '最大仰角', maxElMel: '最大仰角(MEL)', lastTen: '最後の10秒は毎秒',
+      start: '開始', stop: '停止', status: '📢 状況', mute: '🔇 消音', muted: '🔇 消音中', refresh: '更新',
+      toMel: 'MEL までのカウントダウン',
+      whatMax: '最大仰角', statusNone: '今後 3 日間にパスはありません',
+      statusUntil: (w, d) => `${w}は${d}です`,
+      statusInPass: (w, d) => `いま通過中です。${w}は${d}です`,
+      durHM: (h, m) => `${h}時間${m}分後`, durM: m => `${m}分後`, durS: s => `${s}秒後`,
+      sayToMel: s => `MELまであと${s}秒`,
       obsPoint: '📍 観測地点：', geo: '📍 現在地', locating: '取得中…', backHome: '高知高専に戻す',
       home: '高知高専', here: '現在地',
       phaseInit: 'パス予測を計算しています…',
@@ -363,7 +383,6 @@
       sayLos: 'いま、LOSです',
       sayAos: p => `いま、AOSです。${dir(p.aosAz)}の空から昇ります`,
       sayMax: p => `いま、最大仰角です。${dir(p.maxElAz)}の空、${Math.round(p.maxEl)}度`,
-      sayTarget: 'いま、目標時刻です',
       sayStart: 'カウントダウンを開始します',
       sayStartAos: p => `。目標はAOS、${dir(p.aosAz)}の空から昇ります`,
       sayStartMax: p => `。最大仰角${Math.round(p.maxEl)}度、${dir(p.maxElAz)}の空です`,
@@ -373,8 +392,15 @@
       nextAos: 'Next AOS in', next90: 'Next 90 min', past30: 'Past 30 min', footprint: '◯ Coverage (3°)', follow: 'Follow',
       dopTitle: 'Beacon 435.525 MHz (Doppler-corrected)', dopUp: '📡 In pass', dopDown: () => `Elev < ${MIN_EL}°`,
       dopSub: (khz, range, rr) => `Shift ${khz} kHz · range ${range} km (${rr} km/s)`,
-      target: 'Target:', maxEl: 'Max elev.', lastTen: 'Last 10 s: every sec',
-      start: 'Start', stop: 'Stop', test: '🔊 Test', refresh: 'Refresh',
+      target: 'Target:', maxEl: 'Max elev.', maxElMel: 'Max elev. (MEL)', lastTen: 'Last 10 s: every sec',
+      start: 'Start', stop: 'Stop', status: '📢 Status', mute: '🔇 Mute', muted: '🔇 Muted', refresh: 'Refresh',
+      toMel: 'Counting down to MEL',
+      whatMax: 'Maximum elevation', statusNone: 'No passes in the next 3 days.',
+      statusInPass: (w, d) => `In pass now. ${w} in ${d}.`,
+      statusUntil: (w, d) => `${w} in ${d}.`,
+      durHM: (h, m) => `${h} ${h === 1 ? 'hour' : 'hours'} ${m} ${m === 1 ? 'minute' : 'minutes'}`,
+      durM: m => `${m} ${m === 1 ? 'minute' : 'minutes'}`, durS: s => `${s} seconds`,
+      sayToMel: s => `${s} seconds to MEL`,
       obsPoint: '📍 Observer: ', geo: '📍 My location', locating: 'Locating…', backHome: 'Back to NIT Kochi',
       home: 'NIT Kochi', here: 'My location',
       phaseInit: 'Computing passes…',
@@ -410,7 +436,6 @@
       sayLos: 'LOS now.',
       sayAos: p => `AOS now. Rising in the ${dirSpoken(DIR_EN[dirIdx(p.aosAz)])}.`,
       sayMax: p => `Maximum elevation now. ${Math.round(p.maxEl)} degrees, in the ${dirSpoken(DIR_EN[dirIdx(p.maxElAz)])}.`,
-      sayTarget: 'Target time now.',
       sayStart: 'Starting countdown.',
       sayStartAos: p => ` Target is AOS, rising in the ${dirSpoken(DIR_EN[dirIdx(p.aosAz)])}.`,
       sayStartMax: p => ` Maximum elevation ${Math.round(p.maxEl)} degrees, in the ${dirSpoken(DIR_EN[dirIdx(p.maxElAz)])}.`,
@@ -429,6 +454,8 @@
   }
   let targetMs = null;       // 目標（AOS か最大仰角）の時刻
   let losMs = null;
+  let melMs = null;          // 目標が AOS のときの MEL（最大仰角）の時刻。MEL 区間がなければ null
+  let muted = false;         // 「消音」中はカウントダウンを読み上げない（表示は続ける）
   let events = [];           // 読み上げ予定 { at: 時刻(ms), say: () => 文 }（時刻順）
   let nextIdx = 0;
   let timer = null;
@@ -467,8 +494,10 @@
   pickVoice();
   speechSynthesis.onvoiceschanged = pickVoice;
 
-  function speak(text) {
+  // force: 消音中でも読み上げる（「状況」ボタン）
+  function speak(text, force) {
     speechSynthesis.cancel();              // 前の読み上げが残っていたら打ち切る
+    if (muted && !force) { $('last').textContent = '🔇 ' + text; return; }
     const u = new SpeechSynthesisUtterance(text);
     u.lang = LANG === 'en' ? 'en-US' : 'ja-JP';
     if (voices[LANG]) u.voice = voices[LANG];
@@ -477,6 +506,22 @@
     speechSynthesis.speak(u);
     $('last').textContent = '🔊 ' + text;
   }
+  // iOS はタップの中で一度話さないと音が出ないので、消音中は無音の発話でロックを解除しておく
+  function unlockSpeech() {
+    const u = new SpeechSynthesisUtterance(' ');
+    u.volume = 0;
+    speechSynthesis.speak(u);
+  }
+  function renderMute() {
+    setT($('muteBtn'), muted ? 'muted' : 'mute');
+    $('muteBtn').classList.toggle('on', muted);
+    $('muteBtn').setAttribute('aria-pressed', String(muted));
+  }
+  $('muteBtn').addEventListener('click', () => {
+    muted = !muted;
+    renderMute();
+    if (muted) speechSynthesis.cancel(); else unlockSpeech();
+  });
 
   // ---------- 画面スリープ防止 ----------
   async function acquireWakeLock() {
@@ -499,22 +544,33 @@
   });
 
   // ---------- カウントダウン ----------
-  // 目標の 5 分前から 5 秒ごとに「あと○秒」、目標の時刻に AOS / 最大仰角、
+  // 目標の 5 分前から 5 秒ごとに「あと○秒」、目標の時刻に AOS / 最大仰角。
+  // 目標が AOS なら MEL まで「MELまであと○秒」、MEL で最大仰角。
   // その後は LOS まで 5 秒ごとに「LOSまであと○秒」、LOS で終了
-  function buildEvents(target, los) {
+  function buildEvents(p, target, mel, los) {
     const ev = [];
+    // base の時刻から end まで、end までの残り秒数（5 の倍数）を読み上げる
+    const countTo = (base, end, key) => {
+      for (let s = Math.floor((end - base) / 1000 / STEP_SEC) * STEP_SEC; s > 0; s -= STEP_SEC) {
+        const at = end - s * 1000;
+        if (at - base < 4000) continue;     // 直前の読み上げと重ならないように
+        ev.push({ at, say: () => t(key, s) });
+      }
+    };
     const fine = $('lastTen').checked;
     for (let s = LEAD_SEC; s > 0; s -= STEP_SEC) {
       if (fine && s < 10) continue;
       ev.push({ at: target - s * 1000, say: () => t('sayRemain', s) });
     }
     if (fine) for (let s = 9; s > 0; s--) ev.push({ at: target - s * 1000, say: () => t('sayRemain', s) });
-    ev.push({ at: target, say: zeroPhrase });
-    for (let s = Math.floor((los - target) / 1000 / STEP_SEC) * STEP_SEC; s > 0; s -= STEP_SEC) {
-      const at = los - s * 1000;
-      if (at - target < 4000) continue;     // 目標の読み上げと重ならないように
-      ev.push({ at, say: () => t('sayToLos', s) });
+    ev.push({ at: target, say: () => t(isAosTarget() ? 'sayAos' : 'sayMax', p) });
+    let base = target;
+    if (mel) {
+      countTo(base, mel, 'sayToMel');
+      ev.push({ at: mel, say: () => t('sayMax', p) });
+      base = mel;
     }
+    countTo(base, los, 'sayToLos');
     ev.push({ at: los, say: () => t('sayLos') });
     return ev;
   }
@@ -541,10 +597,17 @@
       else { setT($('phase'), 'finished'); finish(false); }
       return;
     }
+    if (melMs && now >= targetMs && now < melMs) {
+      $('big').textContent = fmt(Math.ceil((melMs - now) / 1000));
+      cd.className = 'card countdown done';
+      setT($('phase'), now - targetMs < 3000 ? 'atAos' : 'toMel');
+      return;
+    }
     if (now >= targetMs) {
       $('big').textContent = fmt(Math.ceil((losMs - now) / 1000));
       cd.className = 'card countdown done';
-      setT($('phase'), now - targetMs < 3000 ? (isAosTarget() ? 'atAos' : 'atMax') : 'toLos');
+      const since = now - (melMs || targetMs);
+      setT($('phase'), since < 3000 ? (melMs || !isAosTarget() ? 'atMax' : 'atAos') : 'toLos');
       return;
     }
 
@@ -567,12 +630,15 @@
 
     targetMs = targetTime(p).getTime();
     losMs = p.losTime.getTime();
-    events = buildEvents(targetMs, losMs);
+    // AOS と MEL が近すぎるパスは MEL 区間を作らない
+    melMs = isAosTarget() && p.maxElTime.getTime() - targetMs >= 4000 ? p.maxElTime.getTime() : null;
+    events = buildEvents(p, targetMs, melMs, losMs);
     // すでに過ぎた読み上げ点は除外（5分を切ってから開始した場合）
     nextIdx = events.findIndex(e => e.at > Date.now());
     if (nextIdx < 0) nextIdx = events.length;
 
     // タップ操作の中で一度話すことで iOS の音声ロックを解除する
+    if (muted) unlockSpeech();
     speak(t('sayStart') + t(isAosTarget() ? 'sayStartAos' : 'sayStartMax', p));
     acquireWakeLock();
 
@@ -610,7 +676,25 @@
 
   $('startBtn').addEventListener('click', start);
   $('stopBtn').addEventListener('click', () => finish(true));
-  $('testBtn').addEventListener('click', () => speak(t('sayRemain', 300)));
+  // ---------- 状況 ----------
+  // 選択中のパス（なければ直近のパス）の目標までの時間を読み上げる。通過中は次の区切り（MEL / LOS）まで
+  function durText(ms) {
+    const s = Math.max(0, Math.floor(ms / 1000));
+    if (s >= 3600) return t('durHM', Math.floor(s / 3600), Math.floor(s % 3600 / 60));
+    if (s >= 60) return t('durM', Math.floor(s / 60));
+    return t('durS', s);
+  }
+  function statusText() {
+    const now = Date.now();
+    const p = selectedPass && selectedPass.losTime > now ? selectedPass : allPasses.find(q => q.losTime > now);
+    if (!p) return t('statusNone');
+    const aos = isAosTarget();
+    const tgt = targetTime(p).getTime();
+    if (now < tgt) return t('statusUntil', aos ? 'AOS' : t('whatMax'), durText(tgt - now));
+    if (aos && now < p.maxElTime.getTime()) return t('statusInPass', t('whatMax'), durText(p.maxElTime - now));
+    return t('statusInPass', 'LOS', durText(p.losTime - now));
+  }
+  $('statusBtn').addEventListener('click', () => speak(statusText(), true));
 
   // ================= KOSEN-1 パス予測（iPhone-KOSEN-1 と同じ観測地点・仰角条件） =================
   // 観測地点：既定は高知高専。「現在地」で取得した地点は端末に記憶する
@@ -1010,12 +1094,6 @@
 
   function isAosTarget() { return document.querySelector('input[name=mode]:checked').value === 'aos'; }
   function targetTime(p) { return isAosTarget() ? p.aosTime : p.maxElTime; }
-
-  function zeroPhrase() {
-    if (selectedPass && targetMs === selectedPass.aosTime.getTime()) return t('sayAos', selectedPass);
-    if (selectedPass && targetMs === selectedPass.maxElTime.getTime()) return t('sayMax', selectedPass);
-    return t('sayTarget');
-  }
 
   function renderPasses() {
     const now = Date.now();
