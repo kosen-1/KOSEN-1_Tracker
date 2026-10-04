@@ -237,7 +237,7 @@
     <div class="map-legend">
       <span><i style="border-color:#fcd34d"></i><span data-t="next90">今後 90 分</span></span>
       <span><i style="border-color:#6b7280;border-top-style:dashed"></i><span data-t="past30">過去 30 分</span></span>
-      <span data-t="footprint">◯ 可視範囲(3°)</span>
+      <span data-t="footprint">◯ 可視範囲(0°)</span>
       <label><input type="checkbox" id="follow" checked><span data-t="follow">追従</span></label>
     </div>
   </div>
@@ -294,7 +294,7 @@
 
   <div class="card">
     <div class="pass-head">
-      <span class="title" id="passTitle">KOSEN-1 パス予測（高知高専・仰角 ≥ 3°・3 日間）</span>
+      <span class="title" id="passTitle">KOSEN-1 パス予測（高知高専・仰角 ≥ 0°・3 日間）</span>
       <span id="tleStatus" class="status loading">TLE 取得中…</span>
       <button id="refreshBtn" class="small-btn" data-t="refresh">更新</button>
     </div>
@@ -309,7 +309,7 @@
 
   <div class="card note">
     <ul class="ja">
-      <li>KOSEN-1（NORAD 49402、高知高専の 2U CubeSat）の次のパスを自動で目標に設定します。目標は「AOS（受信開始）」（既定）か「最大仰角」を選べます。パスをタップすると切り替えられます。</li>
+      <li>KOSEN-1（NORAD 49402、高専衛星グループの 2U CubeSat）の次のパスを自動で目標に設定します。目標は「AOS（受信開始）」（既定）か「最大仰角」を選べます。パスをタップすると切り替えられます。</li>
       <li>観測地点は高知高専です。「📍 現在地」で端末の位置に切り替えると、その地点でパスを計算し直します（地点は端末に記憶します）。</li>
       <li>目標（AOS か最大仰角）の 5 分前から 5 秒ごとに「あと○秒」、目標の後は LOS（受信終了）まで 5 秒ごとに「LOSまであと○秒」と読み上げます。</li>
       <li>上の欄に、KOSEN-1 のビーコン 435.525 MHz をドップラー補正したリアルタイムの受信周波数を表示します（観測地点基準）。</li>
@@ -326,7 +326,7 @@
       <li>KOSEN-1 は小型衛星のため肉眼ではほぼ見えません。無線受信のタイミング合わせにお使いください。</li>
     </ul>
     <ul class="en">
-      <li>Automatically targets the next pass of KOSEN-1 (NORAD 49402, a 2U CubeSat built by NIT Kochi). Choose “AOS” (acquisition of signal, default) or “Max elev.” as the target. Tap a pass to switch to it.</li>
+      <li>Automatically targets the next pass of KOSEN-1 (NORAD 49402, a 2U CubeSat by the KOSEN satellite group). Choose “AOS” (acquisition of signal, default) or “Max elev.” as the target. Tap a pass to switch to it.</li>
       <li>The default observer is NIT Kochi. Tap “📍 My location” to recompute passes for your device’s position (remembered on this device).</li>
       <li>From 5 minutes before the target (AOS or max elevation), the remaining seconds are announced every 5 seconds; after the target, the seconds to LOS (loss of signal) are announced every 5 seconds until LOS.</li>
       <li>The panel at the top shows the real-time Doppler-corrected receive frequency of KOSEN-1’s 435.525 MHz beacon for the observer location.</li>
@@ -368,7 +368,7 @@
   const T = {
     ja: {
       badge: 'カウントダウン', lat: '緯度', lon: '経度', alt: '高度', look: '仰角 / 方位', sun: '日照',
-      nextAos: '次の AOS まで', next90: '今後 90 分', past30: '過去 30 分', footprint: '◯ 可視範囲(3°)', follow: '追従',
+      nextAos: '次の AOS まで', next90: '今後 90 分', past30: '過去 30 分', footprint: '◯ 可視範囲(0°)', follow: '追従',
       dopTitle: 'ビーコン435.525 MHz\nドップラー補正',
       dopSub: (khz, range, rr) => `シフト ${khz} kHz\n${range} km（${rr} km/s）`,
       target: 'カウントダウンの目標：', maxEl: '最大仰角', maxElMel: '最大仰角(MEL)', lastTen: '最後の10秒は毎秒',
@@ -421,7 +421,7 @@
     },
     en: {
       badge: 'Countdown', lat: 'Lat', lon: 'Lon', alt: 'Altitude', look: 'Elev / Az', sun: 'Sunlight',
-      nextAos: 'Next AOS in', next90: 'Next 90 min', past30: 'Past 30 min', footprint: '◯ Coverage (3°)', follow: 'Follow',
+      nextAos: 'Next AOS in', next90: 'Next 90 min', past30: 'Past 30 min', footprint: '◯ Coverage (0°)', follow: 'Follow',
       dopTitle: 'Beacon 435.525 MHz\nDoppler-corrected',
       dopSub: (khz, range, rr) => `Shift ${khz} kHz\n${range} km (${rr} km/s)`,
       target: 'Countdown target:', maxEl: 'Max elev.', maxElMel: 'Max elev. (MEL)', lastTen: 'Last 10 s: every sec',
@@ -778,7 +778,7 @@
   }
   setObserverFields();
   const NORAD_ID   = 49402;
-  const MIN_EL     = 3;
+  const MIN_EL     = 0;      // AOS / LOS は地平線（仰角 0°）
   const PASS_STEP_MS = 15 * 1000;
   const HOURS      = 72;
   const EARTH_R    = 6378.137;
@@ -846,7 +846,7 @@
     const ll = [sp.lat, lon];
     satMarker.setLatLng(ll).setOpacity(1);
 
-    // 仰角 3° 以上で見える範囲（地心角）
+    // 仰角 MIN_EL 以上で見える範囲（地心角）
     const e = MIN_EL * Math.PI / 180;
     const ang = Math.acos(EARTH_R * Math.cos(e) / (EARTH_R + sp.h)) - e;
     footprint.setLatLng(ll).setRadius(ang * EARTH_R * 1000);
@@ -1026,7 +1026,7 @@
   function skyPoint(look, date) {
     return { el: look.el, az: look.az, lit: isSunlit(look.pos, sunEci(date)) };
   }
-  // AOS と最大仰角時刻を 1 秒単位まで詰める
+  // AOS・LOS と最大仰角時刻を 1 秒単位まで詰める
   function refineMax(p) {
     let aos = p.aos;
     for (let t = p.aos - 1000; t > p.aos - PASS_STEP_MS; t -= 1000) {
@@ -1034,18 +1034,28 @@
       if (l && l.el >= MIN_EL) aos = t; else break;
     }
     const aosLook = lookAngles(new Date(aos));
+    // LOS：仰角が MIN_EL 以上である最後の 1 秒（予測期間の終わりで切れたパスはそのまま）
+    let los = p.los;
+    const endLook = lookAngles(new Date(p.los));
+    if (endLook && endLook.el < MIN_EL) {
+      los = p.los - PASS_STEP_MS;
+      for (let t = los + 1000; t < p.los; t += 1000) {
+        const l = lookAngles(new Date(t));
+        if (l && l.el >= MIN_EL) los = t; else break;
+      }
+    }
     let best = { t: p.maxT, el: -Infinity, az: 0 };
     for (let t = p.maxT - PASS_STEP_MS; t <= p.maxT + PASS_STEP_MS; t += 1000) {
       const l = lookAngles(new Date(t));
       if (l && l.el > best.el) best = { t, el: l.el, az: l.az };
     }
     // 軌跡の両端を AOS・LOS の位置まで伸ばす
-    const losLook = lookAngles(new Date(p.los));
+    const losLook = lookAngles(new Date(los));
     const points = [...p.points];
     if (aosLook) points.unshift(skyPoint(aosLook, new Date(aos)));
-    if (losLook) points.push(skyPoint(losLook, new Date(p.los)));
+    if (losLook) points.push(skyPoint(losLook, new Date(los)));
     return {
-      aosTime: new Date(aos), aosAz: aosLook ? aosLook.az : best.az, losTime: new Date(p.los),
+      aosTime: new Date(aos), aosAz: aosLook ? aosLook.az : best.az, losTime: new Date(los),
       losAz: losLook ? losLook.az : points.at(-1).az,
       maxElTime: new Date(Math.round(best.t / 1000) * 1000),
       maxEl: best.el, maxElAz: best.az, points,
