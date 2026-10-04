@@ -294,7 +294,7 @@
 
   <div class="card">
     <div class="pass-head">
-      <span class="title" id="passTitle">KOSEN-1 パス予測（高知高専・仰角 ≥ 0°・3 日間）</span>
+      <span class="title" id="passTitle">KOSEN-1 パス予測（高知高専・最大仰角 ≥ 5°・3 日間）</span>
       <span id="tleStatus" class="status loading">TLE 取得中…</span>
       <button id="refreshBtn" class="small-btn" data-t="refresh">更新</button>
     </div>
@@ -390,7 +390,7 @@
       maxLabel: (p, d) => `最大仰角 ${p.maxEl.toFixed(0)}°・${dir(p.maxElAz)}（${md(d)} ${hms(d)}）`,
       sunlit: '☀ 日照', eclipse: '🌑 地球の影', overhead: '🛰 上空通過中',
       hmLeft: (h, m) => `${h}時間${m}分`, msLeft: (m, s) => `${m}分${pad(s)}秒`,
-      passTitle: name => `KOSEN-1 パス予測（${name}・仰角 ≥ ${MIN_EL}°・3 日間）`,
+      passTitle: name => `KOSEN-1 パス予測（${name}・最大仰角 ≥ ${MIN_MAX_EL}°・3 日間）`,
       obsText: (name, lat, lon) => `${name}（${lat}, ${lon}）`,
       noPass: '今後 3 日間にパスはありません',
       passDate: d => `${md(d)}（${'日月火水木金土'[d.getDay()]}）`,
@@ -444,7 +444,7 @@
       maxLabel: (p, d) => `Max elev. ${p.maxEl.toFixed(0)}° ${dir(p.maxElAz)} · ${md(d)} ${hms(d)}`,
       sunlit: '☀ Sunlit', eclipse: '🌑 Eclipse', overhead: '🛰 Overhead now',
       hmLeft: (h, m) => `${h} h ${m} min`, msLeft: (m, s) => `${m} min ${pad(s)} s`,
-      passTitle: name => `KOSEN-1 passes (${name} · elev ≥ ${MIN_EL}° · 3 days)`,
+      passTitle: name => `KOSEN-1 passes (${name} · max elev ≥ ${MIN_MAX_EL}° · 3 days)`,
       obsText: (name, lat, lon) => `${name} (${lat}, ${lon})`,
       noPass: 'No passes in the next 3 days',
       passDate: d => `${'Sun Mon Tue Wed Thu Fri Sat'.split(' ')[d.getDay()]} ${md(d)}`,
@@ -779,6 +779,7 @@
   setObserverFields();
   const NORAD_ID   = 49402;
   const MIN_EL     = 0;      // AOS / LOS は地平線（仰角 0°）
+  const MIN_MAX_EL = 5;      // 最大仰角がこれ未満の低いパスは対象にしない
   const PASS_STEP_MS = 15 * 1000;
   const HOURS      = 72;
   const EARTH_R    = 6378.137;
@@ -1020,7 +1021,7 @@
       }
     }
     if (cur) { cur.los = end; result.push(refineMax(cur)); }
-    return result;
+    return result.filter(p => p.maxEl >= MIN_MAX_EL);
   }
   // スカイマップ用の軌跡点（日照中か地球の影かも記録）
   function skyPoint(look, date) {
