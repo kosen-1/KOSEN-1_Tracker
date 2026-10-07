@@ -53,7 +53,7 @@
     .lang-sw button.on { background: #1d4ed8; color: #fff; font-weight: 600; }
     .badge {
       background: #1d4ed8; color: #fff;
-      font-size: 11px; padding: 3px 6px; border-radius: 4px; white-space: nowrap;
+      font-size: 17px; font-weight: 600; padding: 1px 7px; border-radius: 4px; white-space: nowrap;   /* 左のタイトルと同じ大きさ */
     }
 
     main { max-width: 480px; margin: 0 auto; padding: 8px 0 32px; }
@@ -218,7 +218,7 @@
 <body>
 <header>
   <h1>🛰 KOSEN-1 Tracker</h1>
-  <span class="badge" data-t="badge">カウントダウン</span>
+  <span class="badge" data-t="badge">JR5YGJ</span>
   <div class="lang-sw" role="group" aria-label="Language">
     <button data-lang="ja">日本語</button><button data-lang="en">EN</button>
   </div>
@@ -369,7 +369,7 @@
   }
   const T = {
     ja: {
-      badge: 'カウントダウン', lat: '緯度', lon: '経度', alt: '高度', look: '仰角 / 方位', sun: '日照',
+      badge: 'JR5YGJ', lat: '緯度', lon: '経度', alt: '高度', look: '仰角 / 方位', sun: '日照',
       nextAos: '次の AOS まで', next90: '今後 90 分', past30: '過去 30 分', footprint: '◯ 可視範囲(0°)', follow: '追従',
       dopTitle: 'ビーコン435.525 MHz\nドップラー補正',
       dopSub: (khz, range, rr) => `シフト ${khz} kHz\n${range} km（${rr} km/s）`,
@@ -422,7 +422,7 @@
       sayStartMax: p => `。最大仰角${Math.round(p.maxEl)}度、${dir(p.maxElAz)}の空です`,
     },
     en: {
-      badge: 'Countdown', lat: 'Lat', lon: 'Lon', alt: 'Altitude', look: 'Elev / Az', sun: 'Sunlight',
+      badge: 'JR5YGJ', lat: 'Lat', lon: 'Lon', alt: 'Altitude', look: 'Elev / Az', sun: 'Sunlight',
       nextAos: 'Next AOS in', next90: 'Next 90 min', past30: 'Past 30 min', footprint: '◯ Coverage (0°)', follow: 'Follow',
       dopTitle: 'Beacon 435.525 MHz\nDoppler-corrected',
       dopSub: (khz, range, rr) => `Shift ${khz} kHz\n${range} km (${rr} km/s)`,
