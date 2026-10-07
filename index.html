@@ -162,6 +162,7 @@
 
     .note { font-size: 12px; color: #9098c8; line-height: 1.7; }
     .note li { margin-left: 1.2em; }
+    .note-title { font-size: 14px; font-weight: 700; color: #c8ccf0; margin: 2px 0 4px; letter-spacing: 0.05em; }
     .warn { color: #fca5a5; font-size: 12px; margin: 4px 0 8px; }
     .warn:empty { display: none; }
 
@@ -308,12 +309,13 @@
   </div>
 
   <div class="card note">
+    <h2 class="note-title">README</h2>
     <ul class="ja">
       <li>KOSEN-1（NORAD 49402、高専衛星グループの 2U CubeSat）の次のパスを自動で目標に設定します。目標は「AOS（受信開始）」（既定）か「最大仰角」を選べます。パスをタップすると切り替えられます。</li>
       <li>観測地点は高知高専です。「📍 現在地」で端末の位置に切り替えると、その地点でパスを計算し直します（地点は端末に記憶します）。</li>
-      <li>目標（AOS か最大仰角）の 5 分前から 5 秒ごとに「あと○秒」、目標の後は LOS（受信終了）まで 5 秒ごとに「LOSまであと○秒」と読み上げます。</li>
+      <li>目標（AOS か最大仰角）の 5 分前から 10 秒ごとに「あと○秒」、目標の後は LOS（受信終了）まで 10 秒ごとに「LOSまであと○秒」と読み上げます。</li>
       <li>上の欄に、KOSEN-1 のビーコン 435.525 MHz をドップラー補正したリアルタイムの受信周波数を表示します（観測地点基準）。</li>
-      <li>目標が AOS のときは、AOS の後は MEL（最大仰角）まで 5 秒ごとに「MELまであと○秒」、MEL の後は LOS まで「LOSまであと○秒」と読み上げます。</li>
+      <li>目標が AOS のときは、AOS の後は MEL（最大仰角）まで 10 秒ごとに「MELまであと○秒」、MEL の後は LOS まで「LOSまであと○秒」と読み上げます。</li>
       <li>カウントダウン欄左上の「🔇 消音」で読み上げをすぐに止め、もう一度押すと元に戻ります（表示は続きます）。</li>
       <li>「📢 状況」を押すと、選択中のパス（なければ直近のパス）の目標（AOS か最大仰角）までの時間を読み上げます。</li>
       <li class="ios-only">iPhone では最初に「開始」か「📢 状況」をタップしないと音声が出ません。</li>
@@ -328,9 +330,9 @@
     <ul class="en">
       <li>Automatically targets the next pass of KOSEN-1 (NORAD 49402, a 2U CubeSat by the KOSEN satellite group). Choose “AOS” (acquisition of signal, default) or “Max elev.” as the target. Tap a pass to switch to it.</li>
       <li>The default observer is NIT Kochi. Tap “📍 My location” to recompute passes for your device’s position (remembered on this device).</li>
-      <li>From 5 minutes before the target (AOS or max elevation), the remaining seconds are announced every 5 seconds; after the target, the seconds to LOS (loss of signal) are announced every 5 seconds until LOS.</li>
+      <li>From 5 minutes before the target (AOS or max elevation), the remaining seconds are announced every 10 seconds; after the target, the seconds to LOS (loss of signal) are announced every 10 seconds until LOS.</li>
       <li>The panel at the top shows the real-time Doppler-corrected receive frequency of KOSEN-1’s 435.525 MHz beacon for the observer location.</li>
-      <li>With the AOS target, after AOS the seconds to MEL (max elevation) are announced every 5 seconds, then the seconds to LOS after MEL.</li>
+      <li>With the AOS target, after AOS the seconds to MEL (max elevation) are announced every 10 seconds, then the seconds to LOS after MEL.</li>
       <li>“🔇 Mute” at the top left of the countdown silences the announcements immediately; tap again to restore (the display keeps running).</li>
       <li>“📢 Status” announces the time to the target (AOS or max elevation) of the selected pass, or the next pass if none is selected.</li>
       <li class="ios-only">On iPhone, no sound plays until you tap “Start” or “📢 Status” once.</li>
@@ -347,7 +349,7 @@
 
 <script>
   const LEAD_SEC = 300;      // 何秒前から読み上げるか
-  const STEP_SEC = 5;        // 読み上げ間隔
+  const STEP_SEC = 10;       // 読み上げ間隔（秒）
 
   const $ = id => document.getElementById(id);
 
@@ -606,9 +608,9 @@
   });
 
   // ---------- カウントダウン ----------
-  // 目標の 5 分前から 5 秒ごとに「あと○秒」、目標の時刻に AOS / 最大仰角。
+  // 目標の 5 分前から 10 秒ごとに「あと○秒」、目標の時刻に AOS / 最大仰角。
   // 目標が AOS なら MEL まで「MELまであと○秒」、MEL で最大仰角。
-  // その後は LOS まで 5 秒ごとに「LOSまであと○秒」、LOS で終了
+  // その後は LOS まで 10 秒ごとに「LOSまであと○秒」、LOS で終了
   function buildEvents(p, target, mel, los) {
     const ev = [];
     // base の時刻から end まで、end までの残り秒数（5 の倍数）を読み上げる
