@@ -206,6 +206,7 @@
       padding: 5px 10px; font-size: 10px; color: #9ca3d8;
     }
     .map-info b { display: block; color: #b0bcff; font-size: 12px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .map-info .hl { color: #fff; }   /* 仰角の文字と数値は白 */
     .map-legend { display: flex; gap: 8px; align-items: center; padding: 0 10px 5px; font-size: 10px; color: #9098c8; flex-wrap: wrap; }
     .map-legend i { display: inline-block; width: 16px; height: 0; border-top: 2px solid; vertical-align: middle; margin-right: 4px; }
     .map-legend label { margin-left: auto; display: flex; align-items: center; gap: 4px; color: #c8ccf0; }
@@ -229,11 +230,11 @@
     <div id="map"></div>
     <div class="map-info">
       <div><span data-t="lat">緯度</span><b id="lvLat">—</b></div>
-      <div><span data-t="lon">経度</span><b id="lvLon">—</b></div>
       <div><span data-t="alt">高度</span><b id="lvAlt">—</b></div>
-      <div><span data-t="look">仰角 / 方位</span><b id="lvLook">—</b></div>
-      <div><span data-t="sun">日照</span><b id="lvSun">—</b></div>
       <div><span data-t="nextAos">次の AOS まで</span><b id="lvNext">—</b></div>
+      <div><span data-t="lon">経度</span><b id="lvLon">—</b></div>
+      <div><span data-t="sun">日照</span><b id="lvSun">—</b></div>
+      <div><span class="hl" data-t="lookEl">仰角</span><span data-t="lookAz"> / 方位角</span><b id="lvLook">—</b></div>
     </div>
     <div class="map-legend">
       <span><i style="border-color:#fcd34d"></i><span data-t="next90">今後 90 分</span></span>
@@ -369,7 +370,7 @@
   }
   const T = {
     ja: {
-      badge: 'JR5YGJ', lat: '緯度', lon: '経度', alt: '高度', look: '仰角 / 方位', sun: '日照',
+      badge: 'JR5YGJ', lat: '緯度', lon: '経度', alt: '高度', lookEl: '仰角', lookAz: ' / 方位角', sun: '日照',
       nextAos: '次の AOS まで', next90: '今後 90 分', past30: '過去 30 分', footprint: '◯ 可視範囲(0°)', follow: '追従',
       dopTitle: 'ビーコン435.525 MHz\nドップラー補正',
       dopSub: (khz, range, rr) => `シフト ${khz} kHz\n${range} km（${rr} km/s）`,
@@ -381,6 +382,7 @@
       statusInPass: (w, d) => `いま通過中です。${w}は${d}です`,
       durHM: (h, m) => `${h}時間${m}分後`, durM: m => `${m}分後`, durS: s => `${s}秒後`,
       sayToMel: s => `MELまであと${s}秒`,
+      sayStartInPass: '。いま通過中です',
       obsPoint: '📍 観測地点：', geo: '📍 現在地', locating: '取得中…', backHome: '高知高専に戻す',
       home: '高知高専', here: '現在地',
       phaseInit: 'パス予測を計算しています…',
@@ -422,7 +424,7 @@
       sayStartMax: p => `。最大仰角${Math.round(p.maxEl)}度、${dir(p.maxElAz)}の空です`,
     },
     en: {
-      badge: 'JR5YGJ', lat: 'Lat', lon: 'Lon', alt: 'Altitude', look: 'Elev / Az', sun: 'Sunlight',
+      badge: 'JR5YGJ', lat: 'Lat', lon: 'Lon', alt: 'Altitude', lookEl: 'Elev', lookAz: ' / Az', sun: 'Sunlight',
       nextAos: 'Next AOS in', next90: 'Next 90 min', past30: 'Past 30 min', footprint: '◯ Coverage (0°)', follow: 'Follow',
       dopTitle: 'Beacon 435.525 MHz\nDoppler-corrected',
       dopSub: (khz, range, rr) => `Shift ${khz} kHz\n${range} km (${rr} km/s)`,
@@ -435,6 +437,7 @@
       durHM: (h, m) => `${h} ${h === 1 ? 'hour' : 'hours'}` + (m ? ` and ${m} ${m === 1 ? 'minute' : 'minutes'}` : ''),
       durM: m => `${m} ${m === 1 ? 'minute' : 'minutes'}`, durS: s => `${s} seconds`,
       sayToMel: s => `${s} seconds to MEL`,
+      sayStartInPass: ' In pass now.',
       obsPoint: '📍 Observer: ', geo: '📍 My location', locating: 'Locating…', backHome: 'Back to NIT Kochi',
       home: 'NIT Kochi', here: 'My location',
       phaseInit: 'Computing passes…',
@@ -703,7 +706,8 @@
 
     // タップ操作の中で一度話すことで iOS の音声ロックを解除する
     if (muted) unlockSpeech();
-    speak(t('sayStart') + t(isAosTarget() ? 'sayStartAos' : 'sayStartMax', p));
+    // 目標を過ぎてから（通過中に）開始したときは「いま通過中です」
+    speak(t('sayStart') + (Date.now() >= targetMs ? t('sayStartInPass') : t(isAosTarget() ? 'sayStartAos' : 'sayStartMax', p)));
     acquireWakeLock();
 
     // カウントダウン中は欄の高さを開始時より縮めない（文の行数が変わってもボタンが上下しないように）
@@ -874,7 +878,8 @@
     $('lvLat').textContent = `${Math.abs(sp.lat).toFixed(2)}° ${sp.lat >= 0 ? 'N' : 'S'}`;
     $('lvLon').textContent = `${Math.abs(sp.lon).toFixed(2)}° ${sp.lon >= 0 ? 'E' : 'W'}`;
     $('lvAlt').textContent = `${sp.h.toFixed(0)} km`;
-    $('lvLook').textContent = `${look.el.toFixed(1)}° / ${dir(look.az)}`;
+    // 仰角は白で目立たせる。方位角は北 0°・時計回り
+    $('lvLook').innerHTML = `<span class="hl">${look.el.toFixed(1)}°</span> / ${look.az.toFixed(0)}°`;
     $('lvSun').textContent = t(isSunlit(sp.pos, sunEci(now)) ? 'sunlit' : 'eclipse');
     const next = allPasses.find(p => p.losTime > now);
     let txt = '—';
@@ -928,6 +933,8 @@
     if (now.getSeconds() !== cdLastSec) {
       cdLastSec = now.getSeconds();
       $('cdClock').textContent = `${md(now)} ${hms(now)}`;
+      // 待機中に選択中のパスが LOS を過ぎたら、次のパスに切り替える
+      if (!timer && selectedPass && selectedPass.losTime <= now) autoSelect();
       cdLive = drawCdSky();
     } else if (cdLive) {
       cdLive = drawCdSky();
@@ -1185,7 +1192,8 @@
 
   function renderPasses() {
     const now = Date.now();
-    shownPasses = allPasses.filter(p => targetTime(p).getTime() > now);
+    // LOS を過ぎるまでは一覧に残す（通過中でもそのパスを選んで「開始」できるように）
+    shownPasses = allPasses.filter(p => p.losTime.getTime() > now);
     const el = $('passList');
     if (!shownPasses.length) {
       el.innerHTML = `<div class="no-data">${t('noPass')}</div>`;
@@ -1237,7 +1245,7 @@
   }
   document.querySelectorAll('input[name=mode]').forEach(r => r.addEventListener('change', () => {
     // 選択中のパスはそのままに、目標時刻だけ AOS / 最大仰角で切り替える
-    if (selectedPass && targetTime(selectedPass) > Date.now()) selectPass(selectedPass); else autoSelect();
+    if (selectedPass && selectedPass.losTime > Date.now()) selectPass(selectedPass); else autoSelect();
   }));
 
   let tleState = { kind: 'loading' };   // 言語切替で表示し直すために覚えておく
