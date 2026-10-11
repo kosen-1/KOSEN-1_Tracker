@@ -559,16 +559,26 @@
   }
 
   // force: 消音中でも読み上げる（「状況」ボタン）
+  // 前の読み上げが残っていたら打ち切ってから話す。
+  // Android の Chrome は cancel() の直後に speak() すると次の読み上げが鳴らないことがあるので、
+  // 読み上げ中のときだけ止め、少し間をおいてから話す（何も話していなければすぐ話す＝iPhone の初回タップの解除にも効く）
+  function speakNow(u) {
+    if (speechSynthesis.speaking || speechSynthesis.pending) {
+      speechSynthesis.cancel();
+      setTimeout(() => speechSynthesis.speak(u), 80);
+    } else {
+      speechSynthesis.speak(u);
+    }
+  }
   function speak(text, force) {
-    speechSynthesis.cancel();              // 前の読み上げが残っていたら打ち切る
-    if (muted && !force) { $('last').textContent = '🔇 ' + text; return; }
+    if (muted && !force) { speechSynthesis.cancel(); $('last').textContent = '🔇 ' + text; return; }
     // 日本語は「MEL」を「エムイーエル」、英語は数字を英単語にして読む（表示はそのまま）
     const u = new SpeechSynthesisUtterance(spokenText(text));
     u.lang = LANG === 'en' ? 'en-US' : 'ja-JP';
     if (voices[LANG]) u.voice = voices[LANG];
     u.rate = LANG === 'en' ? 1.0 : 1.1;
     u.volume = 1;
-    speechSynthesis.speak(u);
+    speakNow(u);
     $('last').textContent = '🔊 ' + text;
   }
   // iOS はタップの中で一度話さないと音が出ないので、消音中は無音の発話でロックを解除しておく
