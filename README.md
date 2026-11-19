@@ -20,3 +20,10 @@ ISS 通過カウントダウン（ISS-Alert）をベースにしています。
 2. CelesTrak
 3. このリポジトリの `tle.txt`（GitHub Actions が 6 時間ごとに CelesTrak / SatNOGS から更新）
 4. 端末に保存した古い TLE
+
+### プライバシー
+
+- 現在地（「📍 現在地」）と設定（言語・観測地点）は利用者の端末の中（ブラウザの保存領域）にだけ保存し、外部には送信しません
+- 表示のために GitHub（ページ）・cdnjs（プログラム）・Esri（地図）・CelesTrak（軌道データ）に接続します
+- アクセス解析や Cookie は使っていません
+- 外部のプログラム（Leaflet・satellite.js）は SRI（integrity）で中身を確認してから読み込みます
